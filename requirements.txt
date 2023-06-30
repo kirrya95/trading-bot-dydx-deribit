@@ -1,0 +1,6 @@
+requests
+websocket-client
+python-telegram-bot
+pyyaml
+dydx3
+web3
