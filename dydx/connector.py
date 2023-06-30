@@ -1,3 +1,4 @@
+from dydx3.constants import MARKET_BTC_USD, ORDER_SIDE_BUY, ORDER_TYPE_LIMIT, ORDER_TYPE_MARKET
 import time
 import logging
 from dydx3 import Client
@@ -8,41 +9,59 @@ NETWORK_ID_GOERLI = 5
 # ETHEREUM_ADDRESS = '0x29FA2F326b01203D8C31852d47f0d053Fc7Ce7E7'
 # API_HOST_GOERLI = 'https://api.stage.dydx.exchange'
 
-from dydx3.constants import MARKET_BTC_USD, ORDER_SIDE_BUY, ORDER_TYPE_LIMIT
-
 
 class dYdXConnection:
     def __init__(self, config):
-        self.client = Client(
-            host=config['platforms']['dydx_testnet']['host'],
-            network_id=NETWORK_ID_GOERLI,
-            web3=Web3(Web3.HTTPProvider(WEB_PROVIDER_URL)),
-            eth_private_key=config['eth_private_key'],
-        )
-        self.client.stark_private_key = self.client.onboarding.derive_stark_key()['private_key']
+        self.host = config['platforms']['dydx_testnet']['host']
+        self.network_id = NETWORK_ID_GOERLI
+        self.web3 = Web3(Web3.HTTPProvider(WEB_PROVIDER_URL))
+        self.eth_private_key = config['eth_private_key']
+        self.market = MARKET_BTC_USD
 
-        print('stark_private_key', self.client.stark_private_key)
+        self.client = Client(
+            host=self.host,
+            network_id=self.network_id,
+            web3=self.web3,
+            eth_private_key=self.eth_private_key,
+        )
+
+        self.client.stark_private_key = self.client.onboarding.derive_stark_key()[
+            'private_key']
 
         account_response = self.client.private.get_account().data
-        position_id = account_response['account']['positionId']
-        print('position_id', position_id)
+        self.position_id = account_response['account']['positionId']
+        print('position_id', self.position_id)
 
+        self.create_limit_order(ORDER_SIDE_BUY, '0.001', '10000', '0.0003')
 
-        # Post an bid at a price that is unlikely to match.
+    def create_limit_order(self, side, size, price, limit_fee, post_only=True):
         order_params = {
-            'position_id': position_id,
-            'market': MARKET_BTC_USD,
-            'side': ORDER_SIDE_BUY,
+            'position_id': self.position_id,
+            'market': self.market,
+            'side': side,
             'order_type': ORDER_TYPE_LIMIT,
-            'post_only': True,
-            'size': '0.0777',
-            'price': '20',
-            'limit_fee': '0.0015',
+            'post_only': post_only,
+            'size': size,
+            'price': price,
+            'limit_fee': limit_fee,
             'expiration_epoch_seconds': time.time() + 5 * 60,
         }
+
         order_response = self.client.private.create_order(**order_params).data
-        # order_id = order_response['order']['id']
         print(order_response)
+
+    def create_market_order(self, side, size):
+        order_params = {
+            'position_id': self.position_id,
+            'market': self.market,
+            'side': side,
+            'order_type': ORDER_TYPE_MARKET,
+            'size': size,
+        }
+
+        order_response = self.client.private.create_order(**order_params).data
+        print(order_response)
+
 
     # def create_dydx_client(self):
     #     auth = AuthCredentials(
@@ -51,21 +70,21 @@ class dYdXConnection:
     #     )
     #     return Client(host='https://api.stage.dydx.exchange', auth=auth)
 
-    def test(self):
-        return self.client.private.get_account()
+    # def test(self):
+    #     return self.client.private.get_account()
 
     def get_price(self, market):
         return self.client.public.get_orderbook(market)
 
-    def create_order(self, market, side, price, amount):
-        return self.client.private.create_order(
-            market=market,
-            side=side,
-            price=price,
-            amount=amount,
-            type='LIMIT',
-            postOnly=True
-        )
+    # def create_order(self, market, side, price, amount):
+    #     return self.client.private.create_order(
+    #         market=market,
+    #         side=side,
+    #         price=price,
+    #         amount=amount,
+    #         type='LIMIT',
+    #         postOnly=True
+    #     )
 
     def get_open_orders(self):
         return self.client.private.get_orders(status='OPEN')

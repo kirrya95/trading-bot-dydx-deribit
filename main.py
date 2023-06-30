@@ -24,7 +24,7 @@ async def main():
     # api_key_credentials=config['api_key_credentials'],
     # stark_private_key=config.get('stark_private_key', None)
 
-    print(dydx_connection.test())
+    # print(dydx_connection.test())
 
     # telegram_notifier = TelegramNotifier(
     #     bot_token=config['telegram']['bot_token'],
