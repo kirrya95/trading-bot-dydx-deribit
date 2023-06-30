@@ -4,8 +4,8 @@ api_key_credentials:
   passphrase: '...'
 stark_private_key: '...'
 telegram:
-  bot_token: '...'
-  chat_id: '...'
+  bot_token: '6136357597:AAFM9LUyFkbAhq8kHhNM-YKBEgocHg8jVQM'
+  chat_id: '-1001855077863'
   reporting_interval: 3600
 trading_parameters:
   platform: 'dydx'

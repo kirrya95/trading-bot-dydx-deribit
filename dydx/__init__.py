@@ -1,1 +1,1 @@
-from connection import dYdXConnection
+from .connection import dYdXConnection
