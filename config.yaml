@@ -1,0 +1,26 @@
+api_key_credentials:
+  key: '...'
+  secret: '...'
+  passphrase: '...'
+stark_private_key: '...'
+telegram:
+  bot_token: '...'
+  chat_id: '...'
+  reporting_interval: 3600
+trading_parameters:
+  platform: 'dydx'
+  start_date: '2023-07-01T00:00:00'
+  start_deposit: 1000
+  instr_1: 'ETH-USD'
+  instr_2: 'BTC-USD'
+  spread_operator: '/'
+  grid_step: 10
+  grid_direction: 'long'
+  max_orders: 100
+  orders_in_market: 50
+  order_amount: 10
+  take_profit_per_order: 0.05
+  take_profit_deposit: 0.1
+  refresh_interval_ms: 1000
+  commission_percentage: 0.005
+  account_name: 'Test Account'
