@@ -1,8 +1,9 @@
 api_key_credentials:
-  key: '...'
-  secret: '...'
-  passphrase: '...'
+  key: '1efce8061b1ccc25a2bfc821ef79f958784862e0dcf92f9f766eb8a03473a378'
+  # secret: '...'
+  # passphrase: '...'
 stark_private_key: '...'
+eth_private_key: '1efce8061b1ccc25a2bfc821ef79f958784862e0dcf92f9f766eb8a03473a378'
 telegram:
   bot_token: '6136357597:AAFM9LUyFkbAhq8kHhNM-YKBEgocHg8jVQM'
   chat_id: '-1001855077863'
@@ -23,4 +24,10 @@ trading_parameters:
   take_profit_deposit: 0.1
   refresh_interval_ms: 1000
   commission_percentage: 0.005
-  account_name: 'Test Account'
+platforms:
+  dydx_testnet:
+    host: 'https://api.stage.dydx.exchange'
+  
+  dydx_mainnet:
+    host: 'https://api.dydx.exchange'
+  
