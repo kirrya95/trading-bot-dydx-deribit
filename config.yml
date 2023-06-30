@@ -1,5 +1,5 @@
-api_key_credentials:
-  key: '1efce8061b1ccc25a2bfc821ef79f958784862e0dcf92f9f766eb8a03473a378'
+# api_key_credentials:
+  # key: '1efce8061b1ccc25a2bfc821ef79f958784862e0dcf92f9f766eb8a03473a378'
   # secret: '...'
   # passphrase: '...'
 stark_private_key: '...'
