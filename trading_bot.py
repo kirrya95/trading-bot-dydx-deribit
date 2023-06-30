@@ -11,3 +11,5 @@ class TradingBot:
 
     def start(self, update: Update):
         # TODO: Implement the start function
+        pass
+    

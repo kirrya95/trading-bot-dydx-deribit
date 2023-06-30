@@ -2,33 +2,26 @@ import requests
 import json
 import time
 from datetime import datetime
-from python_telegram_bot import TelegramBot, Update
-from python_telegram_bot.dispatcher import Dispatcher
-from python_telegram_bot.commands import CommandHandler
+# from python_telegram_bot import TelegramBot, Update
+# from python_telegram_bot.dispatcher import Dispatcher
+# from python_telegram_bot.commands import CommandHandler
 
+from utils import load_config
 
-
-
-import yaml
-
-def load_config(filename):
-    with open(filename, 'r') as stream:
-        try:
-            return yaml.safe_load(stream)
-        except yaml.YAMLError as exc:
-            print(exc)
 
 config = load_config('config.yaml')
 
-dydx_connection = dYdXConnection(
-    api_key_credentials=config['api_key_credentials'], 
-    stark_private_key=config.get('stark_private_key', None)
-)
+print(config)
 
-telegram_notifier = TelegramNotifier(
-    bot_token=config['telegram']['bot_token'], 
-    chat_id=config['telegram']['chat_id']
-)
+# dydx_connection = dYdXConnection(
+#     api_key_credentials=config['api_key_credentials'], 
+#     stark_private_key=config.get('stark_private_key', None)
+# )
 
-trading_bot = TradingBot(dydx_connection, telegram_notifier, config['config'])
-trading_bot.run()
+# telegram_notifier = TelegramNotifier(
+#     bot_token=config['telegram']['bot_token'], 
+#     chat_id=config['telegram']['chat_id']
+# )
+
+# trading_bot = TradingBot(dydx_connection, telegram_notifier, config['config'])
+# trading_bot.run()

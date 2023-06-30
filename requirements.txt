@@ -2,5 +2,5 @@ requests
 websocket-client
 python-telegram-bot
 pyyaml
-dydx3
+dydx-v3-python
 web3
