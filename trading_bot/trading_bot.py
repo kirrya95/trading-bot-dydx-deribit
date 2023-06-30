@@ -2,16 +2,16 @@ from dydx3 import Client
 # from dydx3.modules.private import AuthCredentials
 from telegram import Bot
 # from telegram.ext import Dispatcher, CommandHandler
+from dydx3.constants import ORDER_SIDE_BUY, ORDER_SIDE_SELL
 
 
 class TradingBot:
     def __init__(self, dydx_connection, telegram_bot, config):
         self.config = config
-        self.dydx_client = self.create_dydx_client()
-        self.bot = telegram_bot
+        self.dydx_connection = dydx_connection
+        self.telegram_bot = telegram_bot
         # self.dispatcher = Dispatcher(self.bot, None, workers=0)
         # self.setup_handlers()
-
 
     # def setup_handlers(self):
     #     start_handler = CommandHandler('start', self.start)
@@ -30,5 +30,14 @@ class TradingBot:
     #     )
     #     context.bot.send_message(chat_id=update.effective_chat.id, text=str(order))
 
-    # def run(self):
-    #     self.dispatcher.start_polling()
+    async def run(self):
+
+        while True:
+            result = self.dydx_connection.create_market_order(
+                ORDER_SIDE_BUY, '0.01')
+
+            # await self.telegram_bot.send_message(message="Hello, World!")
+            await self.telegram_bot.send_message(message=str(result))
+
+            break
+        # self.dispatcher.start_polling()
