@@ -1,4 +1,4 @@
-from dydx3.constants import MARKET_ETH_USD, ORDER_SIDE_BUY, ORDER_SIDE_SELL
+from dydx3.constants import ORDER_SIDE_BUY, ORDER_SIDE_SELL
 from dydx3.constants import ORDER_TYPE_LIMIT, ORDER_TYPE_MARKET
 import time
 import logging
