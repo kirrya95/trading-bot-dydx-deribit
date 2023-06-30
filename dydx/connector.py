@@ -5,17 +5,11 @@ import logging
 from dydx3 import Client
 from web3 import Web3
 
-# WEB_PROVIDER_URL = 'http://localhost:8545'
-# NETWORK_ID_GOERLI = 5
-# ETHEREUM_ADDRESS = '0x29FA2F326b01203D8C31852d47f0d053Fc7Ce7E7'
-# API_HOST_GOERLI = 'https://api.stage.dydx.exchange'
-
 
 class dYdXConnection:
     def __init__(self, instrument, config):
         self.host = config['platforms']['dydx_testnet']['host']
         self.network_id = config['platforms']['dydx_testnet']['network_id']
-        # self.web3 = Web3(Web3.HTTPProvider(WEB_PROVIDER_URL))
         self.eth_private_key = config['credentials']['eth_private_key']
 
         self.market = instrument + '-USD'
@@ -23,7 +17,7 @@ class dYdXConnection:
         self.client = Client(
             host=self.host,
             network_id=self.network_id,
-            # web3=self.web3,
+            # web3=Web3(Web3.HTTPProvider(WEB_PROVIDER_URL)),
             eth_private_key=self.eth_private_key,
         )
 
@@ -34,7 +28,6 @@ class dYdXConnection:
 
         account_response = self.client.private.get_account().data
         self.position_id = account_response['account']['positionId']
-        # print('position_id', self.position_id)
 
         # self.create_limit_order(ORDER_SIDE_BUY, '0.001', '10000', '0.0003')
         # self.create_market_order(ORDER_SIDE_BUY, '0.01')

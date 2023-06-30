@@ -1,3 +1,6 @@
+import time
+
+
 from dydx3.constants import ORDER_SIDE_BUY, ORDER_SIDE_SELL
 
 
@@ -12,6 +15,8 @@ class TradingBot:
 
     async def run(self):
 
+        timedelta = float(self.config['trading_parameters']['refresh_interval_ms'] / 1000)
+
         while True:
             # result = self.dydx_connection.create_market_order(
             #     ORDER_SIDE_BUY, '0.01')
@@ -22,4 +27,4 @@ class TradingBot:
             await self.telegram_bot.send_message(message=str(f"""{market_price1},
                                                              \n {market_price2}"""))
 
-            break
+            time.sleep(timedelta)
