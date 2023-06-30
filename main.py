@@ -18,21 +18,20 @@ config = load_config('config.yml')
 
 async def main():
 
-    dydx_connection = dYdXConnection(config=config)
+    dydx_connection1 = dYdXConnection(
+        instrument=config['trading_parameters']['instrument_1'], config=config)
 
-
-    # print(result)
-
-    print(dydx_connection.get_index_price())
+    dydx_connection2 = dYdXConnection(
+        instrument=config['trading_parameters']['instrument_2'], config=config)
 
     telegram_notifier = TelegramNotifier(
         bot_token=config['telegram']['bot_token'],
         chat_id=config['telegram']['chat_id']
     )
 
-    trading_bot = TradingBot(dydx_connection, telegram_notifier, config)
+    trading_bot = TradingBot(
+        dydx_connection1, dydx_connection2, telegram_notifier, config)
     await trading_bot.run()
-
 
 
 asyncio.run(main())

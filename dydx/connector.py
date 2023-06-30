@@ -6,18 +6,19 @@ from dydx3 import Client
 from web3 import Web3
 
 # WEB_PROVIDER_URL = 'http://localhost:8545'
-NETWORK_ID_GOERLI = 5
+# NETWORK_ID_GOERLI = 5
 # ETHEREUM_ADDRESS = '0x29FA2F326b01203D8C31852d47f0d053Fc7Ce7E7'
 # API_HOST_GOERLI = 'https://api.stage.dydx.exchange'
 
 
 class dYdXConnection:
-    def __init__(self, config):
+    def __init__(self, instrument, config):
         self.host = config['platforms']['dydx_testnet']['host']
-        self.network_id = NETWORK_ID_GOERLI
+        self.network_id = config['platforms']['dydx_testnet']['network_id']
         # self.web3 = Web3(Web3.HTTPProvider(WEB_PROVIDER_URL))
-        self.eth_private_key = config['eth_private_key']
-        self.market = MARKET_ETH_USD
+        self.eth_private_key = config['credentials']['eth_private_key']
+
+        self.market = instrument + '-USD'
 
         self.client = Client(
             host=self.host,
@@ -26,7 +27,7 @@ class dYdXConnection:
             eth_private_key=self.eth_private_key,
         )
 
-        stark_private_key = config['stark_private_key']
+        stark_private_key = config['credentials']['stark_private_key']
         # self.client.stark_private_key = self.client.onboarding.derive_stark_key()[
         #     'private_key']
         self.client.stark_private_key = stark_private_key
@@ -52,7 +53,6 @@ class dYdXConnection:
         }
 
         order_response = self.client.private.create_order(**order_params).data
-        # print(order_response)
 
         return order_response
 
