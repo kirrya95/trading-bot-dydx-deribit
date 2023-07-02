@@ -1,13 +1,13 @@
 from dydx3.constants import ORDER_SIDE_BUY, ORDER_SIDE_SELL
 from dydx3.constants import ORDER_TYPE_LIMIT, ORDER_TYPE_MARKET
 import time
-import logging
 from dydx3 import Client
 from web3 import Web3
 
 
 class dYdXConnection:
     def __init__(self, instrument, config):
+        self.config = config
         self.host = config['platforms']['dydx_testnet']['host']
         self.network_id = config['platforms']['dydx_testnet']['network_id']
         self.eth_private_key = config['credentials']['eth_private_key']
@@ -20,7 +20,6 @@ class dYdXConnection:
             # web3=Web3(Web3.HTTPProvider(WEB_PROVIDER_URL)),
             eth_private_key=self.eth_private_key,
         )
-
         stark_private_key = config['credentials']['stark_private_key']
         # self.client.stark_private_key = self.client.onboarding.derive_stark_key()[
         #     'private_key']
@@ -33,6 +32,9 @@ class dYdXConnection:
         # self.create_market_order(ORDER_SIDE_BUY, '0.01')
 
     def create_limit_order(self, side, size, price, limit_fee, post_only=True):
+        limit_order_expiration_delay_seconds = self.config[
+            'trading_parameters']['limit_order_expiration_delay_seconds']
+
         order_params = {
             'position_id': self.position_id,
             'market': self.market,
@@ -42,7 +44,7 @@ class dYdXConnection:
             'size': size,
             'price': price,
             'limit_fee': limit_fee,
-            'expiration_epoch_seconds': time.time() + 5 * 60,
+            'expiration_epoch_seconds': time.time() + limit_order_expiration_delay_seconds,
         }
 
         order_response = self.client.private.create_order(**order_params).data
@@ -57,6 +59,9 @@ class dYdXConnection:
         else:
             raise ValueError(f"Invalid order side: {side}")
 
+        limit_order_expiration_delay_seconds = self.config[
+            'trading_parameters']['limit_order_expiration_delay_seconds']
+
         order_params = {
             'position_id': self.position_id,
             'market': self.market,
@@ -66,7 +71,7 @@ class dYdXConnection:
             'size': size,
             'price': price,
             'limit_fee': '0.0015',  # Adjust the fee as needed
-            'expiration_epoch_seconds': time.time() + 5 * 60,
+            'expiration_epoch_seconds': time.time() + limit_order_expiration_delay_seconds,
         }
 
         order_response = self.client.private.create_order(**order_params).data
@@ -74,12 +79,12 @@ class dYdXConnection:
 
         return order_response
 
-    def get_index_price(self):
+    def get_index_price(self) -> float:
         response = self.client.public.get_markets().data
         eth_usd_market_data = response['markets'][self.market]
         market_price = eth_usd_market_data['indexPrice']
 
-        return market_price
+        return float(market_price)
 
     # def get_open_orders(self):
     #     return self.client.private.get_orders(status='OPEN')

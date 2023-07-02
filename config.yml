@@ -3,27 +3,29 @@ credentials:
   stark_private_key: "0x6ad484e0209306880be913c7c35a975baa454ebce82fc59316e17edefc696a4"
 trading_parameters:
   platform: "dydx"
+  mainnet: false
   start_date: "2023-07-01T00:00:00"
-  start_deposit: 1000
   instrument_1: "ETH"
   instrument_2: "BTC"
   spread_operator: "/"
   grid_direction: "long"
-  grid_step: 10
-  max_orders: 100
-  orders_in_market: 50
+  start_deposit: 1000
+  grid_step: 0.01
+  max_orders: 10
+  orders_in_market: 10
   order_amount: 10
-  take_profit_per_order: 0.05
-  take_profit_deposit: 0.1
+  # take_profit_per_order: 0.05
+  # take_profit_deposit: 0.1
   refresh_interval_ms: 1000
   # commission_percentage: 0.005
+  limit_order_expiration_delay_seconds: 300
 platforms:
   dydx_testnet:
     host: "https://api.stage.dydx.exchange"
     network_id: 5
   dydx_mainnet:
     host: "https://api.dydx.exchange"
-    # network_id: 1
+    network_id: 1
 telegram:
   bot_token: "6136357597:AAFM9LUyFkbAhq8kHhNM-YKBEgocHg8jVQM"
   chat_id: "-1001855077863"
