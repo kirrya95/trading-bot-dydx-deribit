@@ -1,5 +1,6 @@
 import requests
 import json
+import websockets
 from datetime import datetime
 import asyncio
 
@@ -16,7 +17,6 @@ config = load_config('config.yml')
 
 
 async def main():
-
     dydx_connection1 = dYdXConnection(
         instrument=config['trading_parameters']['instrument_1'], config=config)
 
@@ -32,5 +32,18 @@ async def main():
         dydx_connection1, dydx_connection2, telegram_notifier, config)
     await trading_bot.run()
 
+    # req1 = trading_bot.dydx_conn1.get_req_for_websocket()
+    # async with websockets.connect('wss://api.stage.dydx.exchange/v3/ws') as websocket:
 
-asyncio.run(main())
+    #     await websocket.send(json.dumps(req1))
+    #     print(f'> {req1}')
+
+    #     while True:
+    #         res = await websocket.recv()
+    #         print(f'< {res}')
+    #         print('-----------------------\n')
+
+
+# asyncio.run(main())
+
+asyncio.get_event_loop().run_until_complete(main())

@@ -10,15 +10,15 @@ trading_parameters:
   spread_operator: "/"
   grid_direction: "long"
   start_deposit: 1000
-  grid_step: 0.01
+  grid_step: 0.00005
   max_orders: 10
-  orders_in_market: 10
+  orders_in_market: 4
   order_size: 25
   # take_profit_per_order: 0.05
   # take_profit_deposit: 0.1
   refresh_interval_ms: 1000
   # commission_percentage: 0.005
-  limit_order_expiration_delay_seconds: 300
+  limit_order_expiration_delay_seconds: 31536000
   limit_fee: 0.0015
 platforms:
   dydx_testnet:

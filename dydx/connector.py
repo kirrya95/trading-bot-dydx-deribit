@@ -4,6 +4,9 @@ import time
 from dydx3 import Client
 from web3 import Web3
 
+from dydx3.constants import ORDER_STATUS_FILLED
+from dydx3.helpers.request_helpers import generate_now_iso
+
 
 class dYdXConnection:
     def __init__(self, instrument, config):
@@ -18,32 +21,46 @@ class dYdXConnection:
         self.client = Client(
             host=self.host,
             network_id=self.network_id,
-            # web3=Web3(Web3.HTTPProvider(WEB_PROVIDER_URL)),
+            web3=Web3(Web3.HTTPProvider(config['web3_provider'])),
             eth_private_key=self.eth_private_key,
         )
         stark_private_key = config['credentials']['stark_private_key']
-        # self.client.stark_private_key = self.client.onboarding.derive_stark_key()[
-        #     'private_key']
         self.client.stark_private_key = stark_private_key
 
         account_response = self.client.private.get_account().data
         self.position_id = account_response['account']['positionId']
 
-        # self.create_limit_order(ORDER_SIDE_BUY, '0.001', '10000', '0.0003')
-        # self.create_market_order(ORDER_SIDE_BUY, '0.01')
+    def get_req_for_websocket(self):
+        now_iso_string = generate_now_iso()
+        signature = self.client.private.sign(
+            request_path='/ws/accounts',
+            method='GET',
+            iso_timestamp=now_iso_string,
+            data={},
+        )
+        req = {
+            'type': 'subscribe',
+            'channel': 'v3_accounts',
+            'accountNumber': '0',
+            'apiKey': self.client.api_key_credentials['key'],
+            'passphrase': self.client.api_key_credentials['passphrase'],
+            'timestamp': now_iso_string,
+            'signature': signature,
+        }
+        return req
 
     def create_limit_order(self, side, size, price, post_only=True):
         limit_order_expiration_delay_seconds = self.config[
             'trading_parameters']['limit_order_expiration_delay_seconds']
 
         order_params = {
-            'position_id': self.position_id,
+            'position_id': str(self.position_id),
             'market': self.market,
             'side': side,
             'order_type': ORDER_TYPE_LIMIT,
             'post_only': post_only,
-            'size': size,
-            'price': price,
+            'size': str(size),
+            'price': str(price),
             'limit_fee': self.limit_fee,
             'expiration_epoch_seconds': time.time() + limit_order_expiration_delay_seconds,
         }
@@ -52,7 +69,7 @@ class dYdXConnection:
 
         return order_response
 
-    def create_take_profit_order(self, side, size, price, post_only=True):
+    def create_take_profit_order(self, side, size, price, post_only=True): # should post_only=True ?
         limit_order_expiration_delay_seconds = self.config[
             'trading_parameters']['limit_order_expiration_delay_seconds']
 
@@ -111,11 +128,14 @@ class dYdXConnection:
     def get_orders(self):
         return self.client.private.get_orders(
             market=self.market,
-            # status=ORDER_STATUS_OPEN,
+            status=ORDER_STATUS_FILLED,
             # side=ORDER_SIDE_SELL,
             # type=ORDER_TYPE_LIMIT,
             # limit=50,
         )
+
+    def cancel_all_orders(self):
+        self.client.private.cancel_all_orders(market=self.market)
 
     # def get_open_orders(self):
     #     return self.client.private.get_orders(status='OPEN')
