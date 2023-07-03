@@ -1,5 +1,5 @@
 from dydx3.constants import ORDER_SIDE_BUY, ORDER_SIDE_SELL
-from dydx3.constants import ORDER_TYPE_LIMIT, ORDER_TYPE_MARKET
+from dydx3.constants import ORDER_TYPE_TAKE_PROFIT, ORDER_TYPE_LIMIT, ORDER_TYPE_MARKET
 import time
 from dydx3 import Client
 from web3 import Web3
@@ -13,6 +13,7 @@ class dYdXConnection:
         self.eth_private_key = config['credentials']['eth_private_key']
 
         self.market = instrument + '-USD'
+        self.limit_fee = config['trading_parameters']['limit_fee']
 
         self.client = Client(
             host=self.host,
@@ -31,7 +32,7 @@ class dYdXConnection:
         # self.create_limit_order(ORDER_SIDE_BUY, '0.001', '10000', '0.0003')
         # self.create_market_order(ORDER_SIDE_BUY, '0.01')
 
-    def create_limit_order(self, side, size, price, limit_fee, post_only=True):
+    def create_limit_order(self, side, size, price, post_only=True):
         limit_order_expiration_delay_seconds = self.config[
             'trading_parameters']['limit_order_expiration_delay_seconds']
 
@@ -43,7 +44,28 @@ class dYdXConnection:
             'post_only': post_only,
             'size': size,
             'price': price,
-            'limit_fee': limit_fee,
+            'limit_fee': self.limit_fee,
+            'expiration_epoch_seconds': time.time() + limit_order_expiration_delay_seconds,
+        }
+
+        order_response = self.client.private.create_order(**order_params).data
+
+        return order_response
+
+    def create_take_profit_order(self, side, size, price, post_only=True):
+        limit_order_expiration_delay_seconds = self.config[
+            'trading_parameters']['limit_order_expiration_delay_seconds']
+
+        order_params = {
+            'position_id': self.position_id,
+            'market': self.market,
+            'side': side,
+            'order_type': ORDER_TYPE_TAKE_PROFIT,
+            'post_only': post_only,
+            'size': size,
+            'price': price,
+            'trigger_price': price,
+            'limit_fee': self.limit_fee,
             'expiration_epoch_seconds': time.time() + limit_order_expiration_delay_seconds,
         }
 
@@ -86,11 +108,20 @@ class dYdXConnection:
 
         return float(market_price)
 
+    def get_orders(self):
+        return self.client.private.get_orders(
+            market=self.market,
+            # status=ORDER_STATUS_OPEN,
+            # side=ORDER_SIDE_SELL,
+            # type=ORDER_TYPE_LIMIT,
+            # limit=50,
+        )
+
     # def get_open_orders(self):
     #     return self.client.private.get_orders(status='OPEN')
 
-    # def cancel_order(self, order_id):
-    #     return self.client.private.cancel_order(order_id)
+    def cancel_order(self, order_id):
+        return self.client.private.cancel_order(order_id)
 
     # def get_positions(self):
     #     return self.client.private.get_positions()
