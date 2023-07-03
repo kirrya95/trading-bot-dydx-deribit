@@ -13,7 +13,7 @@ trading_parameters:
   grid_step: 0.01
   max_orders: 10
   orders_in_market: 10
-  order_amount: 25
+  order_size: 25
   # take_profit_per_order: 0.05
   # take_profit_deposit: 0.1
   refresh_interval_ms: 1000

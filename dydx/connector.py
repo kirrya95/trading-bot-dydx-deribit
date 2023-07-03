@@ -120,8 +120,8 @@ class dYdXConnection:
     # def get_open_orders(self):
     #     return self.client.private.get_orders(status='OPEN')
 
-    def cancel_order(self, order_id):
-        return self.client.private.cancel_order(order_id)
+    # def cancel_order(self, order_id):
+    #     return self.client.private.cancel_order(order_id)
 
     # def get_positions(self):
     #     return self.client.private.get_positions()
