@@ -8,29 +8,41 @@ from dydx3.constants import ORDER_TYPE_LIMIT
 from dydx3.constants import MARKET_ETH_USD, MARKET_BTC_USD
 
 from dydx import dYdXConnection
+from deribit import DeribitConnection
 from telegram_bot import TelegramNotifier
+
 from trading_bot.trading_bot import TradingBot
 
 from utils import load_config
 
-config = load_config('config.yml')
+config = load_config('config.yaml')
 
 
 async def main():
-    dydx_connection1 = dYdXConnection(
-        instrument=config['trading_parameters']['instrument_1'], config=config)
+    # dydx_connection1 = dYdXConnection(
+    #     instrument=config['trading_parameters']['instrument_1'], config=config)
 
-    dydx_connection2 = dYdXConnection(
-        instrument=config['trading_parameters']['instrument_2'], config=config)
+    # dydx_connection2 = dYdXConnection(
+    #     instrument=config['trading_parameters']['instrument_2'], config=config)
+
+    deribit_connection1 = DeribitConnection(
+        client_id=config['credentials']['deribit']['client_id'],
+        client_secret=config['credentials']['deribit']['client_secret']
+    )
 
     telegram_notifier = TelegramNotifier(
         bot_token=config['telegram']['bot_token'],
         chat_id=config['telegram']['chat_id']
     )
 
-    trading_bot = TradingBot(
-        dydx_connection1, dydx_connection2, telegram_notifier, config)
-    await trading_bot.run()
+    print(deribit_connection1.get_asset_price(
+        instrument_name='BTC-PERPETUAL'))
+
+    # trading_bot = TradingBot(
+    #     deribit_connection1, deribit_connection1, telegram_notifier, config)
+    # await trading_bot.run()
+
+    # trading_bot.run_deribit_bot()
 
     # req1 = trading_bot.dydx_conn1.get_req_for_websocket()
     # async with websockets.connect('wss://api.stage.dydx.exchange/v3/ws') as websocket:
