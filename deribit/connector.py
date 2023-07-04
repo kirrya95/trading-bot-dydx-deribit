@@ -35,6 +35,29 @@ class DeribitConnection:
         else:
             raise Exception("Authentication failed: " + str(result))
 
+    def get_contract_size(self, instrument_name):
+        message = {
+            "jsonrpc": "2.0",
+            "id": 42,
+            "method": "public/get_instruments",
+            "params": {
+                # валюта, которую вы хотите торговать
+                "currency": instrument_name.split("-")[0],
+                # вид инструмента, будь то опцион или фьючерс
+                "kind": "option" if 'option' in instrument_name else "future",
+                "expired": False  # фильтрация только активных инструментов
+            }
+        }
+
+        self.ws.send(json.dumps(message))
+        result = json.loads(self.ws.recv())
+        if 'result' in result:
+            for instrument in result['result']:
+                if instrument['instrument_name'] == instrument_name:
+                    return instrument['contract_size']
+
+        return None
+
     def get_asset_price(self, instrument_name,
                         # action
                         ):
@@ -80,8 +103,10 @@ class DeribitConnection:
         self.ws.send(json.dumps(message))
         result = json.loads(self.ws.recv())
 
-        if 'result' in result and 'order_id' in result['result']:
-            return result['result']['order_id']
+        # print(result)
+
+        if 'result' in result and 'order' in result['result']:
+            return result['result']['order']
         else:
             return None
 
