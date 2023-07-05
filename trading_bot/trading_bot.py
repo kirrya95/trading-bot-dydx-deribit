@@ -1,8 +1,8 @@
 import typing as tp
 import time
+import asyncio
 
 from telegram_bot import TelegramNotifier
-
 from connectors import dYdXConnection, DeribitConnection
 from utils import load_config
 
@@ -57,13 +57,8 @@ class TradingBot:
             raise ValueError(
                 f"DVOL currently is not supported. {instrument_name}")
 
-        # total_usdc_amount = config['trading_parameters']['start_deposit']
-
         instr_price = (await self.conn.get_asset_price(
             instrument_name=instrument_name))[1]
-
-        # instr_price = instr_price_bid_ask[
-        #     0] if side == ORDER_SIDE_SELL else instr_price_bid_ask[1]
 
         instrument_amount_usdc = await self.conn.get_position(currency=currency, instrument_name=instrument_name)
 
@@ -123,8 +118,14 @@ class TradingBot:
 
     async def run_bot_one_instrument(self, instrument_name: str):
         min_amount_usdc_to_have = config['trading_parameters']['start_deposit'] / 2
+
         await self.tidy_instrument_amount(instrument_name=instrument_name, min_amount_usdc_to_have=min_amount_usdc_to_have)
-        pass
+
+        while True:
+            instr_price = (await self.conn.get_asset_price(
+                instrument_name=instrument_name))[1]
+            self.create_grid_orders(instr_price, instr_price)
+            await asyncio.sleep(1)
 
     async def run_bot_two_instruments(self, instr1_name: str, instr2_name: str):
         pass

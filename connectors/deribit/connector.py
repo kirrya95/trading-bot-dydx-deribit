@@ -24,6 +24,8 @@ class DeribitConnection(AbstractConnector):
         if config['trading_parameters']['mainnet'] == True:
             self.connection = await websockets.client.connect(config['platforms']['deribit_mainnet']['websocket_url'])
 
+        return "Connected to Deribit"
+
     async def authenticate(self):
         message = {
             "jsonrpc": "2.0",
@@ -43,6 +45,8 @@ class DeribitConnection(AbstractConnector):
         else:
             raise Exception("Authentication failed: " + str(result))
 
+        return "Authenticated"
+
     async def cancel_order(self, order_id):
         cancel_order_message = {
             "jsonrpc": "2.0",
@@ -58,16 +62,18 @@ class DeribitConnection(AbstractConnector):
         cancel_result = json.loads(response)
 
         if 'error' in cancel_result:
-            print(
+            raise ValueError(
                 f"Failed to cancel order {order_id}: {cancel_result['error']}")
 
-    async def cancel_all_orders(self, instrument_name):
+        return cancel_result
+
+    async def get_all_orders(self, currency, instrument_name):
         get_orders_message = {
             "jsonrpc": "2.0",
             "id": 42,
             "method": "private/get_open_orders_by_currency",
             "params": {
-                "currency": instrument_name.split("-")[0],
+                "currency": currency,
                 "kind": "option" if 'option' in instrument_name else "future",
             }
         }
@@ -77,14 +83,23 @@ class DeribitConnection(AbstractConnector):
         result = json.loads(response)
 
         if 'result' in result:
-            cancel_tasks = [self.cancel_order(
-                order['order_id']) for order in result['result']]
-            # await asyncio.gather(*cancel_tasks)
-            for task in cancel_tasks:
-                await task
+            return result['result']
         else:
-            print(
-                f"Failed to get open orders: {result['error'] if 'error' in result else 'Unknown error'}")
+            raise ValueError(
+                f"Failed to get open orders: {result['error']}")
+
+    async def cancel_all_orders(self, instrument_name):
+
+        orders = await self.get_all_orders(currency=instrument_name.split()[0],
+                                           instrument_name=instrument_name)
+
+        cancel_tasks = [self.cancel_order(
+            order['order_id']) for order in orders]
+        # await asyncio.gather(*cancel_tasks)
+        for task in cancel_tasks:
+            await task
+
+        return "All limit orders cancelled"
 
     async def get_contract_size(self, instrument_name):
         message = {
@@ -108,8 +123,11 @@ class DeribitConnection(AbstractConnector):
             for instrument in result['result']:
                 if instrument['instrument_name'] == instrument_name:
                     return instrument['contract_size']
+        else:
+            raise ValueError(
+                f"Failed to get contract size: {result['error'] if 'error' in result else 'Unknown error'}")
 
-        return None
+        raise ValueError("Failed to get contract size: Instrument not found")
 
     async def get_asset_price(self, instrument_name,
                               # action
@@ -135,7 +153,8 @@ class DeribitConnection(AbstractConnector):
             # return result['result']['best_bid_price'] if action == 'bid' else result['result']['best_ask_price']
             return (result['result']['best_bid_price'], result['result']['best_ask_price'])
         else:
-            return None
+            raise ValueError(
+                f"Failed to get asset price: {result['error'] if 'error' in result else 'Unknown error'}")
 
     async def create_limit_order(self, instrument_name, amount, price, action):
         if action not in ['buy', 'sell']:
@@ -203,10 +222,6 @@ class DeribitConnection(AbstractConnector):
         await self.connection.send(json.dumps(get_positions_message))
         response = await self.connection.recv()
         result = json.loads(response)
-
-        # print('------------------')
-        # print(result)
-        # print('------------------')
 
         if 'result' in result:
             for position in result['result']:
