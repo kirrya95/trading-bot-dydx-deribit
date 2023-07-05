@@ -45,7 +45,8 @@ class TradingBot:
 
         self.last_triggered_price = None
 
-        # self.grid_orders = []
+        self.grid_orders = []
+        self.take_profit_orders = []
 
     async def tidy_instrument_amount(self,
                                      instrument_name: str,
@@ -112,7 +113,7 @@ class TradingBot:
                 instr_2_price = instr1_price / grid_price
                 print(instr_1_price)
                 res = self.conn.create_limit_order(
-                    ORDER_SIDE_BUY, order1_usd_amount, instr_1_price)
+                    instrument_name='ETH-PERPETUAL', amount=order1_usd_amount, price=instr_1_price, action=ORDER_SIDE_BUY)
                 # print(res)
                 # break
 
@@ -127,7 +128,12 @@ class TradingBot:
             self.create_grid_orders(instr_price, instr_price)
             await asyncio.sleep(1)
 
+            break
+
     async def run_bot_two_instruments(self, instr1_name: str, instr2_name: str):
+        pass
+
+    async def listen_to_orders(self):
         pass
 
     # async def run_dydx_bot(self):
