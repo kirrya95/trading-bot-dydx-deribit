@@ -18,16 +18,17 @@ config = load_config('config.yaml')
 
 
 async def main():
-    # dydx_connection1 = dYdXConnection(
-    #     instrument=config['trading_parameters']['instrument_1'], config=config)
 
-    # dydx_connection2 = dYdXConnection(
-    #     instrument=config['trading_parameters']['instrument_2'], config=config)
+    # instrument_name = f'{instr1}-{instr2}'
+    # instrument_name = (instr1 if instr2 == '-' else instrument_name)
+    # print(instrument_name)
 
-    deribit_connection1 = DeribitConnection(
+    deribit_connection = DeribitConnection(
         client_id=config['credentials']['deribit']['client_id'],
         client_secret=config['credentials']['deribit']['client_secret']
     )
+    await deribit_connection.connect()  # инициализация соединения
+    await deribit_connection.authenticate()  # аутентификация
 
     telegram_notifier = TelegramNotifier(
         bot_token=config['telegram']['bot_token'],
@@ -36,10 +37,7 @@ async def main():
 
     # print(await deribit_connection1.cancel_all_orders())
 
-    await deribit_connection1.connect()  # инициализация соединения
-    await deribit_connection1.authenticate()  # аутентификация
-    # отмена всех ордеров
-    await deribit_connection1.cancel_all_orders(instrument_name='BTC-PERPETUAL')
+    # await deribit_connection.cancel_all_orders(instrument_name=instr1)  # отмена всех ордеров
 
     # print(await deribit_connection1.get_asset_price(
     #     instrument_name='BTC-PERPETUAL'))
@@ -50,9 +48,19 @@ async def main():
     # print(await deribit_connection1.create_limit_order(
     #     instrument_name='BTC-PERPETUAL', amount=10, price=10000, action='buy'))
 
-    # trading_bot = TradingBot(
-    #     deribit_connection1, deribit_connection1, telegram_notifier, config)
-    # await trading_bot.run()
+    instr1 = config['trading_parameters']['instrument_1']
+    instr2 = config['trading_parameters']['instrument_2']
+    trading_bot = TradingBot(
+        # number_of_instruments=1,
+        conn=deribit_connection,
+        telegram_bot=telegram_notifier,
+    )
+
+    if instr2 == '-':
+        await trading_bot.run_bot_one_instrument(instrument_name=instr1)
+    else:
+        await trading_bot.run_bot_two_instruments(
+            instr1=instr1, instr2=instr2)
 
     # trading_bot.run_deribit_bot()
 

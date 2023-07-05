@@ -25,3 +25,7 @@ class AbstractConnector(ABC):
     @abstractmethod
     async def create_limit_order(self, instrument_name, amount, price, action):
         pass
+
+    # @abstractmethod
+    # async def execute_market_order(self, instrument_name):
+    #     pass

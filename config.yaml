@@ -6,11 +6,11 @@ credentials:
     client_id: "6_LsHSTh"
     client_secret: "QXHN8xGo9e2WSs0y4Z0uf1bqVmh8LKbVHtpnvuV0mn8"
 trading_parameters:
-  platform: "dydx"
+  platform: "deribit"
   mainnet: false
   start_date: "2023-07-01T00:00:00"
-  instrument_1: "ETH"
-  instrument_2: "BTC"
+  instrument_1: "BTC-PERPETUAL"
+  instrument_2: "-"
   spread_operator: "/"
   grid_direction: "long"
   start_deposit: 1000
@@ -31,6 +31,10 @@ platforms:
   dydx_mainnet:
     host: "https://api.dydx.exchange"
     network_id: 1
+  deribit_testnet:
+    websocket_url: "wss://test.deribit.com/ws/api/v2"
+  deribit_mainnet:
+    websocket_url: "wss://www.deribit.com/ws/api/v2"
 telegram:
   bot_token: "6136357597:AAFM9LUyFkbAhq8kHhNM-YKBEgocHg8jVQM"
   chat_id: "-1001855077863"

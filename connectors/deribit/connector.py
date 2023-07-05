@@ -3,11 +3,13 @@ import base64
 import hashlib
 import time
 import hmac
-
 import asyncio
 import websockets
 
 from connectors import AbstractConnector
+from utils import load_config
+
+config = load_config('config.yaml')
 
 
 class DeribitConnection(AbstractConnector):
@@ -17,7 +19,10 @@ class DeribitConnection(AbstractConnector):
         self.access_token = None
 
     async def connect(self):
-        self.connection = await websockets.client.connect('wss://test.deribit.com/ws/api/v2')
+        if config['trading_parameters']['mainnet'] == False:
+            self.connection = await websockets.client.connect(config['platforms']['deribit_testnet']['websocket_url'])
+        if config['trading_parameters']['mainnet'] == True:
+            self.connection = await websockets.client.connect(config['platforms']['deribit_mainnet']['websocket_url'])
 
     async def authenticate(self):
         message = {
@@ -158,3 +163,60 @@ class DeribitConnection(AbstractConnector):
             return result['result']['order']
         else:
             return None
+
+    async def execute_market_order(self, instrument_name, amount, side):
+        side = side.lower()
+
+        if side not in ['buy', 'sell']:
+            raise ValueError(
+                'Invalid side. Please choose either "buy" or "sell".')
+
+        market_order_message = {
+            "jsonrpc": "2.0",
+            "id": 42,
+            "method": f"private/{side}",
+            "params": {
+                "instrument_name": instrument_name,
+                "amount": amount,
+                "type": "market"
+            }
+        }
+        await self.connection.send(json.dumps(market_order_message))
+        response = await self.connection.recv()
+        result = json.loads(response)
+
+        if 'result' in result:
+            return result['result']['order']
+        else:
+            raise ValueError(
+                f"Failed to execute market order: {result['error'] if 'error' in result else 'Unknown error'}")
+
+    async def get_position(self, currency, instrument_name) -> float:
+        get_positions_message = {
+            "jsonrpc": "2.0",
+            "id": 42,
+            "method": "private/get_positions",
+            "params": {
+                "currency": currency
+            }
+        }
+        await self.connection.send(json.dumps(get_positions_message))
+        response = await self.connection.recv()
+        result = json.loads(response)
+
+        # print('------------------')
+        # print(result)
+        # print('------------------')
+
+        if 'result' in result:
+            for position in result['result']:
+                if position['instrument_name'] == instrument_name:
+                    print(
+                        f"Position size for {instrument_name}: {position['size']}")
+                    return float(position['size'])
+
+            print(f"No open position found for {instrument_name}")
+            return 0.0
+        else:
+            raise ValueError(
+                f"Failed to get positions: {result['error'] if 'error' in result else 'Unknown error'}")

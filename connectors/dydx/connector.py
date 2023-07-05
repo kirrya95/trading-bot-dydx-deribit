@@ -7,8 +7,10 @@ from web3 import Web3
 from dydx3.constants import ORDER_STATUS_FILLED
 from dydx3.helpers.request_helpers import generate_now_iso
 
+from connectors import AbstractConnector
 
-class dYdXConnection:
+
+class dYdXConnection(AbstractConnector):
     def __init__(self, instrument, config):
         self.config = config
         self.host = config['platforms']['dydx_testnet']['host']
@@ -49,27 +51,28 @@ class dYdXConnection:
         }
         return req
 
-    def create_limit_order(self, side, size, price, post_only=True):
-        limit_order_expiration_delay_seconds = self.config[
-            'trading_parameters']['limit_order_expiration_delay_seconds']
+    # def create_limit_order(self, side, size, price, post_only=True):
+    #     limit_order_expiration_delay_seconds = self.config[
+    #         'trading_parameters']['limit_order_expiration_delay_seconds']
 
-        order_params = {
-            'position_id': str(self.position_id),
-            'market': self.market,
-            'side': side,
-            'order_type': ORDER_TYPE_LIMIT,
-            'post_only': post_only,
-            'size': str(size),
-            'price': str(price),
-            'limit_fee': self.limit_fee,
-            'expiration_epoch_seconds': time.time() + limit_order_expiration_delay_seconds,
-        }
+    #     order_params = {
+    #         'position_id': str(self.position_id),
+    #         'market': self.market,
+    #         'side': side,
+    #         'order_type': ORDER_TYPE_LIMIT,
+    #         'post_only': post_only,
+    #         'size': str(size),
+    #         'price': str(price),
+    #         'limit_fee': self.limit_fee,
+    #         'expiration_epoch_seconds': time.time() + limit_order_expiration_delay_seconds,
+    #     }
 
-        order_response = self.client.private.create_order(**order_params).data
+    #     order_response = self.client.private.create_order(**order_params).data
 
-        return order_response
+    #     return order_response
 
-    def create_take_profit_order(self, side, size, price, post_only=True): # should post_only=True ?
+    # should post_only=True ?
+    def create_take_profit_order(self, side, size, price, post_only=True):
         limit_order_expiration_delay_seconds = self.config[
             'trading_parameters']['limit_order_expiration_delay_seconds']
 
@@ -134,8 +137,8 @@ class dYdXConnection:
             # limit=50,
         )
 
-    def cancel_all_orders(self):
-        self.client.private.cancel_all_orders(market=self.market)
+    # def cancel_all_orders(self):
+    #     self.client.private.cancel_all_orders(market=self.market)
 
     # def get_open_orders(self):
     #     return self.client.private.get_orders(status='OPEN')
@@ -145,3 +148,18 @@ class dYdXConnection:
 
     # def get_positions(self):
     #     return self.client.private.get_positions()
+
+    async def cancel_order(self, order_id):
+        pass
+
+    async def cancel_all_orders(self, instrument_name):
+        pass
+
+    async def get_contract_size(self, instrument_name):
+        pass
+
+    async def get_asset_price(self, instrument_name):
+        pass
+
+    async def create_limit_order(self, instrument_name, amount, price, action):
+        pass
