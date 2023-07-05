@@ -5,8 +5,7 @@ import time
 from dydx3.constants import ORDER_SIDE_BUY, ORDER_SIDE_SELL
 from telegram_bot import TelegramNotifier
 
-from dydx import dYdXConnection
-from deribit import DeribitConnection
+from connectors import dYdXConnection, DeribitConnection
 
 
 NDIGITS_ETH_PRICE_ROUNDING = 1

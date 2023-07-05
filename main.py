@@ -7,8 +7,7 @@ import asyncio
 from dydx3.constants import ORDER_TYPE_LIMIT
 from dydx3.constants import MARKET_ETH_USD, MARKET_BTC_USD
 
-from dydx import dYdXConnection
-from deribit import DeribitConnection
+from connectors import dYdXConnection, DeribitConnection
 from telegram_bot import TelegramNotifier
 
 from trading_bot.trading_bot import TradingBot

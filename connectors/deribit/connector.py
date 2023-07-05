@@ -1,4 +1,3 @@
-import websocket
 import json
 import base64
 import hashlib
@@ -7,10 +6,11 @@ import hmac
 
 import asyncio
 import websockets
-import json
+
+from connectors import AbstractConnector
 
 
-class DeribitConnection:
+class DeribitConnection(AbstractConnector):
     def __init__(self, client_id, client_secret):
         self.client_id = client_id
         self.client_secret = client_secret
