@@ -31,22 +31,23 @@ class TradingBot:
         self.grid_step = float(config['trading_parameters']['grid_step'])
         self.side = config['trading_parameters']['grid_direction']
 
-        self.initial_market_price1 = self.conn1.get_index_price()
-        self.initial_market_price2 = self.conn2.get_index_price()
-        self.initial_spread_price = self.get_spread_price(
-            self.initial_market_price1, self.initial_market_price2)
+        # self.initial_market_price1 = self.conn1.get_index_price()
+        # self.initial_market_price2 = self.conn2.get_index_price()
+        # self.initial_spread_price = self.get_spread_price(
+        #     self.initial_market_price1, self.initial_market_price2
+        # )
 
         self.last_triggered_price = None
 
         # self.grid_orders = []
 
-    def get_spread_price(self, market_price1: float, market_price2: float) -> float:
+    def get_spread_price(self, instr1_price: float, instr2_price: float) -> float:
         spread_operator = self.config['trading_parameters']['spread_operator']
 
         if spread_operator == '/':
-            spread_price = market_price1 / market_price2
+            spread_price = instr1_price / instr2_price
         elif spread_operator == '*':
-            spread_price = market_price1 * market_price2
+            spread_price = instr1_price * instr2_price
         # elif spread_operator == '+':
         #     spread_price = market_price1 + market_price2
         # elif spread_operator == '-':

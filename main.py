@@ -35,14 +35,21 @@ async def main():
         chat_id=config['telegram']['chat_id']
     )
 
-    print(deribit_connection1.get_asset_price(
-        instrument_name='BTC-PERPETUAL'))
+    # print(await deribit_connection1.cancel_all_orders())
 
-    print(deribit_connection1.get_contract_size(
-        instrument_name='BTC-PERPETUAL'))
+    await deribit_connection1.connect()  # инициализация соединения
+    await deribit_connection1.authenticate()  # аутентификация
+    # отмена всех ордеров
+    await deribit_connection1.cancel_all_orders(instrument_name='BTC-PERPETUAL')
 
-    print(deribit_connection1.create_limit_order(
-        instrument_name='BTC-PERPETUAL', amount=10, price=10000, action='buy'))
+    # print(await deribit_connection1.get_asset_price(
+    #     instrument_name='BTC-PERPETUAL'))
+
+    # print(await deribit_connection1.get_contract_size(
+    #     instrument_name='BTC-PERPETUAL'))
+
+    # print(await deribit_connection1.create_limit_order(
+    #     instrument_name='BTC-PERPETUAL', amount=10, price=10000, action='buy'))
 
     # trading_bot = TradingBot(
     #     deribit_connection1, deribit_connection1, telegram_notifier, config)
