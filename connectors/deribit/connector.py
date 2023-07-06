@@ -47,25 +47,29 @@ class DeribitConnection(AbstractConnector):
 
         return "Authenticated"
 
-    async def cancel_order(self, order_id):
-        cancel_order_message = {
-            "jsonrpc": "2.0",
-            "id": 42,
-            "method": "private/cancel",
-            "params": {
-                "order_id": order_id
-            }
-        }
+    # async def subscribe_to_order_updates(self):
+    #     channel = "user.orders.any.any"
+    #     message = {
+    #         "jsonrpc": "2.0",
+    #         "id": 42,  # can be any number
+    #         "method": "public/subscribe",
+    #         "params": {
+    #             "channels": [channel]
+    #         }
+    #     }
 
-        await self.connection.send(json.dumps(cancel_order_message))
-        response = await self.connection.recv()
-        cancel_result = json.loads(response)
+    #     await self.connection.send(json.dumps(message))
 
-        if 'error' in cancel_result:
-            raise ValueError(
-                f"Failed to cancel order {order_id}: {cancel_result['error']}")
+    # async def start_listening(self):
+    #     await self.subscribe_to_order_updates()
 
-        return cancel_result
+    #     # while True:
+    #     message = await self.connection.recv()
+    #     message_data = json.loads(message)
+    #     if 'params' in message_data:
+    #         data = message_data['params']['data']
+    #         if data['order_state'] == 'filled':
+    #             print(f"Order {data['order_id']} was filled.")
 
     async def get_all_orders(self, currency, instrument_name):
         get_orders_message = {
@@ -87,6 +91,26 @@ class DeribitConnection(AbstractConnector):
         else:
             raise ValueError(
                 f"Failed to get open orders: {result['error']}")
+
+    async def cancel_order(self, order_id):
+        cancel_order_message = {
+            "jsonrpc": "2.0",
+            "id": 42,
+            "method": "private/cancel",
+            "params": {
+                "order_id": order_id
+            }
+        }
+
+        await self.connection.send(json.dumps(cancel_order_message))
+        response = await self.connection.recv()
+        cancel_result = json.loads(response)
+
+        if 'error' in cancel_result:
+            raise ValueError(
+                f"Failed to cancel order {order_id}: {cancel_result['error']}")
+
+        return cancel_result
 
     async def cancel_all_orders(self, instrument_name):
 
@@ -157,6 +181,7 @@ class DeribitConnection(AbstractConnector):
                 f"Failed to get asset price: {result['error'] if 'error' in result else 'Unknown error'}")
 
     async def create_limit_order(self, instrument_name, amount, price, action):
+        action = action.lower()
         if action not in ['buy', 'sell']:
             raise ValueError(
                 'Invalid action. Please choose either "buy" or "sell".')
@@ -181,7 +206,8 @@ class DeribitConnection(AbstractConnector):
         if 'result' in result and 'order' in result['result']:
             return result['result']['order']
         else:
-            return None
+            raise ValueError(
+                f"Failed to create limit order: {result['error'] if 'error' in result else 'Unknown error'}")
 
     async def execute_market_order(self, instrument_name, amount, side):
         side = side.lower()

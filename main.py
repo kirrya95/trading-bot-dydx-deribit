@@ -23,31 +23,19 @@ async def main():
     # instrument_name = (instr1 if instr2 == '-' else instrument_name)
     # print(instrument_name)
 
+    # loop = asyncio.get_event_loop()
+
     deribit_connection = DeribitConnection(
         client_id=config['credentials']['deribit']['client_id'],
         client_secret=config['credentials']['deribit']['client_secret']
     )
-    await deribit_connection.connect()  # инициализация соединения
-    await deribit_connection.authenticate()  # аутентификация
+    await deribit_connection.connect()
+    await deribit_connection.authenticate()
 
     telegram_notifier = TelegramNotifier(
         bot_token=config['telegram']['bot_token'],
         chat_id=config['telegram']['chat_id']
     )
-
-    # print(await deribit_connection1.cancel_all_orders())
-
-    # await deribit_connection.cancel_all_orders(instrument_name=instr1)  # отмена всех ордеров
-
-    # print(await deribit_connection1.get_asset_price(
-    #     instrument_name='BTC-PERPETUAL'))
-
-    # print(await deribit_connection1.get_contract_size(
-    #     instrument_name='BTC-PERPETUAL'))
-
-    # print(await deribit_connection1.create_limit_order(
-    #     instrument_name='BTC-PERPETUAL', amount=10, price=10000, action='buy'))
-
     instr1 = config['trading_parameters']['instrument_1']
     instr2 = config['trading_parameters']['instrument_2']
     trading_bot = TradingBot(
@@ -56,11 +44,22 @@ async def main():
         telegram_bot=telegram_notifier,
     )
 
+    # await deribit_connection.subscribe_to_order_updates()
+    # tasks = []
     if instr2 == '-':
-        await trading_bot.run_bot_one_instrument(instrument_name=instr1)
+        await (trading_bot.run_bot_one_instrument(
+            instrument_name=instr1))
     else:
-        await trading_bot.run_bot_two_instruments(
-            instr1=instr1, instr2=instr2)
+        await (trading_bot.run_bot_two_instruments(
+            instr1=instr1, instr2=instr2))
+
+    # tasks.append(deribit_connection.start_listening())
+
+    # print(await deribit_connection.get_all_orders())
+
+    print('here')
+
+    # await asyncio.gather(*tasks)
 
     # trading_bot.run_deribit_bot()
 
@@ -76,6 +75,6 @@ async def main():
     #         print('-----------------------\n')
 
 
-# asyncio.run(main())
-
-asyncio.get_event_loop().run_until_complete(main())
+# asyncio.get_event_loop().run_until_complete(main())
+if __name__ == '__main__':
+    asyncio.run(main())
