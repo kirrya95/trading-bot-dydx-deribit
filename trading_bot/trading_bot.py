@@ -4,7 +4,7 @@ import asyncio
 
 from telegram_bot import TelegramNotifier
 from connectors import dYdXConnection, DeribitConnection
-from utils import load_config
+from utils import load_config, to_utc_timestamp
 
 
 NDIGITS_ETH_PRICE_ROUNDING = 2
@@ -39,12 +39,17 @@ class TradingBot:
         self.take_profit_spread_delta = float(
             config['trading_parameters']['take_profit_spread_delta'])
         self.side = config['trading_parameters']['grid_direction']
+        self.start_timestamp = to_utc_timestamp(
+            config['trading_parameters']['start_datetime'])
 
         self.number_of_instruments = 1 if config['trading_parameters']['instrument_2'] == '-' else 2
 
         self.initial_instr1_price = None
         self.initial_instr2_price = None
         self.initial_spread_price = None
+
+        self.current_instr1_price = None
+        self.current_instr2_price = None
 
         # self.grid_orders = []
 
@@ -117,16 +122,8 @@ class TradingBot:
 
         return spread_price
 
-    # TODO: implement
-    async def get_take_profit_price(self, spread_price: float) -> float:
-        self.grid_step
-        self.side
-        # self.percent
-
-        # return 1 - sum()
-
-    def remove_all_orders(self):
-        self.conn.cancel_all_orders()
+    # def remove_all_orders(self):
+    #     self.conn.cancel_all_orders()
 
     # async def create_grid_orders(self, instrument, instrument_price: float):
     #     # spread_price = self.get_spread_price(instr1_price, instr2_price)
@@ -200,6 +197,10 @@ class TradingBot:
 
     async def run_bot_two_instruments(self, instr1_name: str, instr2_name: str):
         min_amount_usdc_to_have = config['trading_parameters']['start_deposit'] / 2
+        current_timestamp = time.time()
+        # ensuring that bot starts working at the right time
+        if (current_timestamp - self.start_timestamp) < 0:
+            await asyncio.sleep(self.start_timestamp - current_timestamp)
 
         await self.tidy_instrument_amount(instrument_name=instr1_name, min_amount_usdc_to_have=min_amount_usdc_to_have)
         await self.tidy_instrument_amount(instrument_name=instr2_name, min_amount_usdc_to_have=min_amount_usdc_to_have)
@@ -208,20 +209,22 @@ class TradingBot:
         while True:
             if self.side == 'long':
                 # if side is long, then we buy instr1 and sell instr2
-                instr1_price = (await self.conn.get_asset_price(
+                self.current_instr1_price = (await self.conn.get_asset_price(
                     instrument_name=instr1_name))[1]
-                instr2_price = (await self.conn.get_asset_price(
+                self.current_instr2_price = (await self.conn.get_asset_price(
                     instrument_name=instr2_name))[0]
             elif self.side == 'short':
                 # if side is short, then we sell instr1 and buy instr2
-                instr1_price = (await self.conn.get_asset_price(
+                self.current_instr1_price = (await self.conn.get_asset_price(
                     instrument_name=instr1_name))[0]
-                instr2_price = (await self.conn.get_asset_price(
+                self.current_instr2_price = (await self.conn.get_asset_price(
                     instrument_name=instr2_name))[1]
             else:
                 raise ValueError('Side is neither long nor short')
 
-            spread_price = await self.get_spread_price(instr1_price, instr2_price)
+            # calculating spread price
+            spread_price = await self.get_spread_price(self.current_instr1_price, self.current_instr2_price)
+
             local_grid_lows = [self.initial_spread_price - self.grid_step *
                                i for i in range(1, config['trading_parameters']['orders_in_market']+1)]
             local_grid_highs = [self.initial_spread_price + self.grid_step * i
@@ -287,16 +290,18 @@ class TradingBot:
 
         if self.number_of_instruments == 2:
 
-            current_deposit = 1100
             instr1_name = config['trading_parameters']['instrument_1']
             instr2_name = config['trading_parameters']['instrument_2']
             instr1_initial_amount = 1.5
             instr2_initial_amount = 1.7
-            instr1_amount = 1.6
-            instr2_amount = 1.8
-            working_time = 100
 
             while True:
+                instr1_amount = 1.6
+                instr2_amount = 1.8
+                working_time = round(time.time() - self.start_timestamp)
+                current_deposit = self.current_instr1_price * \
+                    instr1_amount + self.current_instr2_price * instr2_amount
+
                 await self.telegram_bot.account_info_two_instruments(
                     current_deposit=current_deposit,
                     instr1_name=instr1_name,

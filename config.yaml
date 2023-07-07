@@ -9,7 +9,7 @@ credentials:
 trading_parameters:
   platform: "deribit"
   mainnet: false
-  start_date: "2023-07-01T00:00:00"
+  start_datetime: "2023-07-07 17:30:00"
   instrument_1: "ETH-PERPETUAL"
   instrument_2: "BTC-PERPETUAL"
   spread_operator: "/"

@@ -26,13 +26,15 @@ class TelegramNotifier:
             f'Initial amount of instrument 2: {instr2_initial_amount} \n' \
             f'Current amount of instrument 1: {instr1_amount} \n' \
             f'Current amount of instrument 2: {instr2_amount} \n' \
-            f'Working time: {working_time} \n'
+            f'Working time: {working_time} seconds \n'
 
         await self.send_message(message)
 
     async def send_message(self, message):
         account_name = config['account_name']
+        platform_name = config['trading_parameters']['platform']
 
-        message_header = f'Account: {account_name}'
+        message_header = f'Account: {account_name} \n' \
+                         f'Platform: {platform_name}'
         message = f'{message_header}\n \n{message}'
         await self.bot.send_message(chat_id=self.chat_id, text=message)
