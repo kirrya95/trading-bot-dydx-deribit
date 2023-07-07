@@ -44,14 +44,16 @@ async def main():
         telegram_bot=telegram_notifier,
     )
 
-    # await deribit_connection.subscribe_to_order_updates()
-    # tasks = []
     if instr2 == '-':
-        await (trading_bot.run_bot_one_instrument(
-            instrument_name=instr1))
+        await trading_bot.run_bot_one_instrument(
+            instrument_name=instr1)
     else:
-        await (trading_bot.run_bot_two_instruments(
-            instr1=instr1, instr2=instr2))
+        # await trading_bot.run_bot_two_instruments(
+        #     instr1_name=instr1, instr2_name=instr2)
+        await asyncio.gather(
+            trading_bot.run_bot_two_instruments(
+                instr1_name=instr1, instr2_name=instr2),
+            trading_bot.send_strategy_info())
 
     # tasks.append(deribit_connection.start_listening())
 
