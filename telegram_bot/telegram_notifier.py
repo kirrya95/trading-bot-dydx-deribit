@@ -1,6 +1,6 @@
 import telegram
 
-from utils import load_config
+from utils import load_config, timedelta_to_str
 
 config = load_config('config.yaml')
 
@@ -26,7 +26,7 @@ class TelegramNotifier:
             f'Initial amount of instrument 2: {instr2_initial_amount} \n' \
             f'Current amount of instrument 1: {instr1_amount} \n' \
             f'Current amount of instrument 2: {instr2_amount} \n' \
-            f'Working time: {working_time} seconds \n'
+            f'Working time: {timedelta_to_str(working_time)} \n'
 
         await self.send_message(message)
 

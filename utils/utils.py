@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import pytz
 
 
@@ -8,6 +8,10 @@ def to_utc_timestamp(string_datetime):
     dt = pytz.UTC.localize(dt)
 
     return dt.timestamp()
+
+
+def timedelta_to_str(seconds_difference):
+    return timedelta(seconds=seconds_difference)
 
 
 if __name__ == '__main__':
