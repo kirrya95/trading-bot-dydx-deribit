@@ -68,14 +68,12 @@ class TradingBot:
                                      instrument_name: str,
                                      min_amount_usdc_to_have: float,
                                      ):
-        if 'DVOL' not in instrument_name:
-            currency = instrument_name.split('-')[0]
-        else:
-            raise ValueError(
-                f"DVOL currently is not supported. {instrument_name}")
 
         # instr_price = (await self.conn.get_asset_price(
         #     instrument_name=instrument_name))[1]
+
+        currency = self.conn.get_currency_from_instrument(
+            instrument_name=instrument_name)
 
         instrument_amount_usdc = await self.conn.get_position(currency=currency, instrument_name=instrument_name)
 
@@ -115,23 +113,23 @@ class TradingBot:
     def remove_all_orders(self):
         self.conn.cancel_all_orders()
 
-    async def create_grid_orders(self, instrument, instrument_price: float):
-        # spread_price = self.get_spread_price(instr1_price, instr2_price)
-        # order1_usd_amount = round(
-        #     self.size / instr1_price, ndigits=NDIGITS_ETH_AMOUNT_ROUNDING)
+    # async def create_grid_orders(self, instrument, instrument_price: float):
+    #     # spread_price = self.get_spread_price(instr1_price, instr2_price)
+    #     # order1_usd_amount = round(
+    #     #     self.size / instr1_price, ndigits=NDIGITS_ETH_AMOUNT_ROUNDING)
 
-        number_of_orders = config['trading_parameters']['orders_in_market']
-        if self.side == 'long':
-            for i in range(1, number_of_orders+1):
-                grid_price = spread_price - self.grid_step * i
-                instr_1_price = round(
-                    grid_price * instr2_price, ndigits=NDIGITS_ETH_PRICE_ROUNDING)
-                instr_2_price = instr1_price / grid_price
-                print(instr_1_price)
-                res = self.conn.create_limit_order(
-                    instrument_name='ETH-PERPETUAL', amount=order1_usd_amount, price=instr_1_price, action=ORDER_SIDE_BUY)
-                # print(res)
-                # break
+    #     number_of_orders = config['trading_parameters']['orders_in_market']
+    #     if self.side == 'long':
+    #         for i in range(1, number_of_orders+1):
+    #             grid_price = spread_price - self.grid_step * i
+    #             instr_1_price = round(
+    #                 grid_price * instr2_price, ndigits=NDIGITS_ETH_PRICE_ROUNDING)
+    #             instr_2_price = instr1_price / grid_price
+    #             print(instr_1_price)
+    #             res = self.conn.create_limit_order(
+    #                 instrument_name='ETH-PERPETUAL', amount=order1_usd_amount, price=instr_1_price, action=ORDER_SIDE_BUY)
+    #             # print(res)
+    #             # break
 
     async def create_grid_orders_one_instrument(self, instrument_name: str, instrument_price: float):
         number_of_orders = config['trading_parameters']['orders_in_market']
@@ -149,16 +147,17 @@ class TradingBot:
     async def run_bot_one_instrument(self, instrument_name: str):
         min_amount_usdc_to_have = config['trading_parameters']['start_deposit'] / 2
 
-        # print(await self.conn.get_all_orders(currency=instrument_name.split('-')[0], instrument_name=instrument_name))
+        print(await self.conn.get_all_orders(currency=instrument_name.split('-')[0], instrument_name=instrument_name))
 
         # await self.tidy_instrument_amount(instrument_name=instrument_name, min_amount_usdc_to_have=min_amount_usdc_to_have)
-        await self.set_initial_instr_prices()
-        await self.create_grid_orders_one_instrument(instrument_name=instrument_name, instrument_price=self.initial_instr1_price)
-        print(self.initial_instr1_price, self.initial_instr2_price)
-        print(await self.get_spread_price(self.initial_instr1_price,
-                                          self.initial_instr2_price))
-        await asyncio.sleep(5)
+        # await self.set_initial_instr_prices()
+        # await self.create_grid_orders_one_instrument(instrument_name=instrument_name, instrument_price=self.initial_instr1_price)
+        # print(self.initial_instr1_price, self.initial_instr2_price)
+        # print(await self.get_spread_price(self.initial_instr1_price,
+        #                                   self.initial_instr2_price))
+        # await asyncio.sleep(5)
 
+        return
         while True:
             all_orders = await self.conn.get_all_orders(currency=instrument_name.split('-')[0], instrument_name=instrument_name)
             for order in all_orders:
@@ -198,6 +197,9 @@ class TradingBot:
             self.create_grid_orders(instr1_price, instr2_price)
             await asyncio.sleep(5)
 
+            # current_price = self.conn.get_asset_price(
+            #     instrument_name=instrument_name)
+            # await self.create_grid_orders_one_instrument(instrument_name=instrument_name, instrument_price=self.initial_instr1_price)
             break
 
     async def listen_to_orders(self):

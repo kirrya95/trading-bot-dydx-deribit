@@ -47,6 +47,14 @@ class DeribitConnection(AbstractConnector):
 
         return "Authenticated"
 
+    async def get_currency_from_instrument(self, instrument_name):
+        if 'DVOL' not in instrument_name:
+            currency = instrument_name.split('-')[0]
+        else:
+            raise ValueError(
+                f"DVOL currently is not supported. {instrument_name}")
+        return currency
+
     # async def subscribe_to_order_updates(self):
     #     channel = "user.orders.any.any"
     #     message = {
