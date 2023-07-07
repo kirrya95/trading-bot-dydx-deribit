@@ -258,23 +258,27 @@ class TradingBot:
                         continue
                     if grid_spread in self.active_spreads:
                         continue
-                    await self.telegram_bot.send_message(
-                        f"Reached grid level \n" +
-                        f"Current spread price: {spread_price} \n" +
-                        f"Executing 2 market orders...")
+                    # await self.telegram_bot.send_message(
+                    #     f"Reached grid level \n"
+                    #     f"Current spread price: {spread_price} \n"
+                    #     f"Executing 2 market orders...")
                     instr1_order = await self.conn.execute_market_order(instrument_name=instr1_name, amount=self.size, side=ORDER_SIDE_BUY)
-                    await self.telegram_bot.send_message(
-                        "Executed 1st market order: {}".format(instr1_name))
+                    # await self.telegram_bot.send_message(
+                    #     "Executed 1st market order: {}".format(instr1_name))
                     instr2_order = await self.conn.execute_market_order(instrument_name=instr2_name, amount=self.size, side=ORDER_SIDE_SELL)
-                    await self.telegram_bot.send_message(
-                        "Executed 2nd market order: {}".format(instr2_name))
+                    # await self.telegram_bot.send_message(
+                    #     "Executed 2nd market order: {}".format(instr2_name))
+                    await self.telegram_bot.notify_new_orders_two_instruments(spread_price=spread_price,
+                                                                              order1=instr1_name,
+                                                                              order2=instr2_name,
+                                                                              order1_type='market',
+                                                                              order2_type='market',)
                     self.active_spreads.append(grid_spread)
                     self.take_profit_spreads.append(
                         grid_spread + self.take_profit_spread_delta)
 
-                grid_step_numbers = spread_price / self.initial_spread_price
             elif self.side == 'short':
-                grid_step_numbers = self.initial_spread_price / spread_price
+                pass
 
             await asyncio.sleep(1)
 

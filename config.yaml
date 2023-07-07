@@ -15,11 +15,11 @@ trading_parameters:
   spread_operator: "/"
   grid_direction: "long"
   start_deposit: 1000
-  grid_step: 0.00001
+  grid_step: 0.000001
   max_orders: 10
   orders_in_market: 4
   order_size: 50
-  take_profit_spread_delta: 0.0003
+  take_profit_spread_delta: 0.0000005
   # take_profit_deposit: 0.1
   send_updates_interval: 10 # seconds
   # commission_percentage: 0.005

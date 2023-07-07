@@ -10,6 +10,15 @@ class TelegramNotifier:
         self.bot = telegram.Bot(token=bot_token)
         self.chat_id = chat_id
 
+    async def send_message(self, message):
+        account_name = config['account_name']
+        platform_name = config['trading_parameters']['platform']
+
+        message_header = f'Account: {account_name} \n' \
+                         f'Platform: {platform_name}'
+        message = f'{message_header}\n \n{message}'
+        await self.bot.send_message(chat_id=self.chat_id, text=message)
+
     async def account_info_two_instruments(self, current_deposit,
                                            instr1_name, instr2_name,
                                            instr1_initial_amount, instr2_initial_amount,
@@ -30,11 +39,14 @@ class TelegramNotifier:
 
         await self.send_message(message)
 
-    async def send_message(self, message):
-        account_name = config['account_name']
-        platform_name = config['trading_parameters']['platform']
+    async def notify_new_orders_two_instruments(self, spread_price, order1, order2, order1_type, order2_type):
+        if not (order1_type == 'market' and order2_type == 'market'):
+            raise ValueError('Both orders should be market orders')
 
-        message_header = f'Account: {account_name} \n' \
-                         f'Platform: {platform_name}'
-        message = f'{message_header}\n \n{message}'
-        await self.bot.send_message(chat_id=self.chat_id, text=message)
+        message = f"Reached grid level \n" \
+                  f"Current spread price: {spread_price} \n" \
+                  f"Executed two orders: \n" \
+                  f"{order1} \n" \
+                  f"{order2} \n"
+
+        await self.send_message(message)
