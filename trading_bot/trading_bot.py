@@ -48,6 +48,9 @@ class TradingBot:
         self.initial_instr2_price = None
         self.initial_spread_price = None
 
+        self.initial_amount1_assets = None
+        self.initial_amount2_assets = None
+
         self.current_instr1_price = None
         self.current_instr2_price = None
 
@@ -57,7 +60,7 @@ class TradingBot:
         self.active_positions = []
         self.take_profit_spreads = []
 
-    async def set_initial_instr_prices(self):
+    async def set_initial_instr_prices_and_amounts(self):
         instr1 = config['trading_parameters']['instrument_1']
         instr2 = config['trading_parameters']['instrument_2']
 
@@ -77,12 +80,27 @@ class TradingBot:
                     instrument_name=instr2))[1]
             else:
                 self.initial_instr2_price = None
+        else:
+            raise ValueError(
+                f"Invalid grid direction: {self.side}. Should be 'long' or 'short'")
 
+        # setting initial spread price
         if instr2 != '-':
             self.initial_spread_price = await self.get_spread_price(
                 instr1_price=self.initial_instr1_price,
                 instr2_price=self.initial_instr2_price
             )
+
+        # setting initial amounts
+        currency1 = await self.conn.get_currency_from_instrument(
+            instrument_name=instr1)
+        print(await self.conn.get_position(currency=currency1, instrument_name=instr1), "HEREEE")
+        self.initial_amount1_assets = await self.conn.get_position(currency=currency1, instrument_name=instr1) / self.initial_instr1_price
+
+        if instr2 != '-':
+            currency2 = await self.conn.get_currency_from_instrument(
+                instrument_name=instr2)
+            self.initial_amount2_assets = await self.conn.get_position(currency=currency2, instrument_name=instr2) / self.initial_instr2_price
 
     async def tidy_instrument_amount(self,
                                      instrument_name: str,
@@ -204,7 +222,7 @@ class TradingBot:
 
         await self.tidy_instrument_amount(instrument_name=instr1_name, min_amount_usdc_to_have=min_amount_usdc_to_have)
         await self.tidy_instrument_amount(instrument_name=instr2_name, min_amount_usdc_to_have=min_amount_usdc_to_have)
-        await self.set_initial_instr_prices()
+        await self.set_initial_instr_prices_and_amounts()
 
         while True:
             if self.side == 'long':
@@ -239,16 +257,17 @@ class TradingBot:
             if self.side == 'long':
                 for tp_spread in self.take_profit_spreads:
                     if spread_price >= tp_spread:
-                        await self.telegram_bot.send_message(
-                            f"Reached take profit level \n" +
-                            f"Current spread price: {spread_price} \n" +
-                            f"Executing take profit (market) orders...")
                         instr1_order = await self.conn.execute_market_order(instrument_name=instr1_name, amount=self.size, side=ORDER_SIDE_SELL)
-                        await self.telegram_bot.send_message(
-                            "Executed first market order: {}".format(instr1_name))
                         instr2_order = await self.conn.execute_market_order(instrument_name=instr2_name, amount=self.size, side=ORDER_SIDE_BUY)
-                        await self.telegram_bot.send_message(
-                            "Executed 2nd market order: {}".format(instr2_name))
+                        print(instr1_order)
+                        # print(instr2_order)
+
+                        await self.telegram_bot.notify_take_profit_two_instrumets(take_profit_level=tp_spread,
+                                                                                  spread_price=spread_price,
+                                                                                  order1=instr1_name,
+                                                                                  order2=instr2_name,
+                                                                                  order1_type='market',
+                                                                                  order2_type='market')
                         self.take_profit_spreads.remove(tp_spread)
 
                 for grid_spread in local_grid:
@@ -258,16 +277,11 @@ class TradingBot:
                         continue
                     if grid_spread in self.active_spreads:
                         continue
-                    # await self.telegram_bot.send_message(
-                    #     f"Reached grid level \n"
-                    #     f"Current spread price: {spread_price} \n"
-                    #     f"Executing 2 market orders...")
+
                     instr1_order = await self.conn.execute_market_order(instrument_name=instr1_name, amount=self.size, side=ORDER_SIDE_BUY)
-                    # await self.telegram_bot.send_message(
-                    #     "Executed 1st market order: {}".format(instr1_name))
+
                     instr2_order = await self.conn.execute_market_order(instrument_name=instr2_name, amount=self.size, side=ORDER_SIDE_SELL)
-                    # await self.telegram_bot.send_message(
-                    #     "Executed 2nd market order: {}".format(instr2_name))
+
                     await self.telegram_bot.notify_new_orders_two_instruments(spread_price=spread_price,
                                                                               order1=instr1_name,
                                                                               order2=instr2_name,
@@ -288,7 +302,7 @@ class TradingBot:
             # break
 
     async def send_strategy_info(self):
-        await asyncio.sleep(5)
+        await asyncio.sleep(5.5)
 
         updates_interval = config['trading_parameters']['send_updates_interval']
 
@@ -296,22 +310,25 @@ class TradingBot:
 
             instr1_name = config['trading_parameters']['instrument_1']
             instr2_name = config['trading_parameters']['instrument_2']
-            instr1_initial_amount = 1.5
-            instr2_initial_amount = 1.7
+            # instr1_initial_amount = 1.5
+            # instr2_initial_amount = 1.7
 
             while True:
-                instr1_amount = 1.6
-                instr2_amount = 1.8
+                currency1 = await self.conn.get_currency_from_instrument(instrument_name=instr1_name)
+                currency2 = await self.conn.get_currency_from_instrument(instrument_name=instr2_name)
+                print(currency1, currency2)
+                instr1_amount = await self.conn.get_position(currency=currency1, instrument_name=instr1_name)
+                instr2_amount = await self.conn.get_position(currency=currency2, instrument_name=instr2_name)
+                print(instr1_amount, instr2_amount)
                 working_time = round(time.time() - self.start_timestamp)
-                current_deposit = self.current_instr1_price * \
-                    instr1_amount + self.current_instr2_price * instr2_amount
+                current_deposit = instr1_amount + instr2_amount
 
                 await self.telegram_bot.account_info_two_instruments(
                     current_deposit=current_deposit,
                     instr1_name=instr1_name,
                     instr2_name=instr2_name,
-                    instr1_initial_amount=instr1_initial_amount,
-                    instr2_initial_amount=instr2_initial_amount,
+                    # instr1_initial_amount=instr1_initial_amount,
+                    # instr2_initial_amount=instr2_initial_amount,
                     instr1_amount=instr1_amount,
                     instr2_amount=instr2_amount,
                     working_time=working_time
