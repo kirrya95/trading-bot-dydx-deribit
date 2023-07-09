@@ -1,0 +1,1 @@
+from .bot_one_instrument import TradingBotOneInstrument

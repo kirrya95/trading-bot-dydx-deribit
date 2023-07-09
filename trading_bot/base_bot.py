@@ -34,6 +34,15 @@ class BaseTradingBot(ABC):
         current_timestamp = time.time()
         return max(self.start_timestamp - current_timestamp, 0)
 
+    async def check_total_take_profit_reach(self, current_deposit_usdc: float):
+        take_profit_deposit = config['trading_parameters']['take_profit_deposit']
+        if self.side == 'long' and current_deposit_usdc >= self.take_profit_step:
+            return True
+        elif self.side == 'short' and current_deposit_usdc <= -self.take_profit_step:
+            return True
+        else:
+            return False
+
     async def tidy_instrument_amount(self,
                                      instrument_name: str,
                                      amount_in_usdc_to_have: float,

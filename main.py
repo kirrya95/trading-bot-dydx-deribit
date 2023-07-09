@@ -20,13 +20,6 @@ config = load_config('config.yaml')
 
 
 async def main():
-
-    # instrument_name = f'{instr1}-{instr2}'
-    # instrument_name = (instr1 if instr2 == '-' else instrument_name)
-    # print(instrument_name)
-
-    # loop = asyncio.get_event_loop()
-
     deribit_connection = DeribitConnection(
         client_id=config['credentials']['deribit']['client_id'],
         client_secret=config['credentials']['deribit']['client_secret']
@@ -50,20 +43,19 @@ async def main():
             conn=deribit_connection,
             telegram_bot=telegram_notifier,
         )
-    # try:
-    await asyncio.gather(
-        trading_bot.run(),
-        trading_bot.send_strategy_info())
-    # except Exception as e:
-    #     print(e)
-    #     await telegram_notifier.send_message(f'Exception: {e}', parse_mode='')
-    #     await asyncio.sleep(1)
-    #     await telegram_notifier.send_message('Bot closed')
-    #     return
+    try:
+        await asyncio.gather(
+            trading_bot.run(),
+            trading_bot.send_strategy_info())
+    except Exception as e:
+        print(e)
+        await telegram_notifier.send_message(f'Exception: {e}', parse_mode='')
+        await asyncio.sleep(1)
+        await telegram_notifier.send_message('Bot closed')
+        return
 
-    print('here')
+    print('trading bot closed')
 
 
-# asyncio.get_event_loop().run_until_complete(main())
 if __name__ == '__main__':
     asyncio.run(main())

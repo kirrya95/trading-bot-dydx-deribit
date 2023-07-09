@@ -20,7 +20,7 @@ trading_parameters:
   orders_in_market: 4
   order_size: 50
   take_profit_spread_delta: 0.0000005
-  # take_profit_deposit: 0.1
+  take_profit_deposit: 0.1 # 10%
   send_updates_interval: 10 # seconds
   # commission_percentage: 0.005
   # limit_order_expiration_delay_seconds: 31536000
