@@ -5,6 +5,7 @@ import asyncio
 from telegram_bot import TelegramNotifier
 from connectors import dYdXConnection, DeribitConnection
 from utils import load_config, to_utc_timestamp
+from constants import *
 
 
 NDIGITS_ETH_PRICE_ROUNDING = 2
@@ -13,12 +14,10 @@ NDIGITS_BTC_PRICE_ROUNDING = 1
 # NDIGITS_ETH_AMOUNT_ROUNDING = 3
 # NDIGITS_BTC_AMOUNT_ROUNDING = 3
 
-# ------------ Order Side ------------
-ORDER_SIDE_BUY = 'BUY'
-ORDER_SIDE_SELL = 'SELL'
-
 
 config = load_config('config.yaml')
+
+lock = asyncio.Lock()
 
 
 class TradingBot:
@@ -161,18 +160,18 @@ class TradingBot:
     #             # print(res)
     #             # break
 
-    async def create_grid_orders_one_instrument(self, instrument_name: str, instrument_price: float):
-        number_of_orders = config['trading_parameters']['orders_in_market']
+    # async def create_grid_orders_one_instrument(self, instrument_name: str, instrument_price: float):
+    #     number_of_orders = config['trading_parameters']['orders_in_market']
 
-        if self.side == 'long':
-            for i in range(1, number_of_orders+1):
-                grid_price = instrument_price - self.grid_step * i
-                print(grid_price)
-                res = await self.conn.create_limit_order(
-                    instrument_name=instrument_name, amount=self.size, price=grid_price, action=ORDER_SIDE_BUY)
-                self.grid_orders.append(res)
-                print(res)
-                # break
+    #     if self.side == 'long':
+    #         for i in range(1, number_of_orders+1):
+    #             grid_price = instrument_price - self.grid_step * i
+    #             print(grid_price)
+    #             res = await self.conn.create_limit_order(
+    #                 instrument_name=instrument_name, amount=self.size, price=grid_price, action=ORDER_SIDE_BUY)
+    #             self.grid_orders.append(res)
+    #             print(res)
+    #             # break
 
     async def run_bot_one_instrument(self, instrument_name: str):
         min_amount_usdc_to_have = config['trading_parameters']['start_deposit'] / 2
@@ -225,6 +224,7 @@ class TradingBot:
         await self.set_initial_instr_prices_and_amounts()
 
         while True:
+
             if self.side == 'long':
                 # if side is long, then we buy instr1 and sell instr2
                 self.current_instr1_price = (await self.conn.get_asset_price(
@@ -259,9 +259,6 @@ class TradingBot:
                     if spread_price >= tp_spread:
                         instr1_order = await self.conn.execute_market_order(instrument_name=instr1_name, amount=self.size, side=ORDER_SIDE_SELL)
                         instr2_order = await self.conn.execute_market_order(instrument_name=instr2_name, amount=self.size, side=ORDER_SIDE_BUY)
-                        print(instr1_order)
-                        # print(instr2_order)
-
                         await self.telegram_bot.notify_take_profit_two_instrumets(take_profit_level=tp_spread,
                                                                                   spread_price=spread_price,
                                                                                   order1=instr1_name,
@@ -269,7 +266,6 @@ class TradingBot:
                                                                                   order1_type='market',
                                                                                   order2_type='market')
                         self.take_profit_spreads.remove(tp_spread)
-
                 for grid_spread in local_grid:
                     if grid_spread >= self.initial_spread_price:
                         continue
@@ -279,9 +275,8 @@ class TradingBot:
                         continue
 
                     instr1_order = await self.conn.execute_market_order(instrument_name=instr1_name, amount=self.size, side=ORDER_SIDE_BUY)
-
                     instr2_order = await self.conn.execute_market_order(instrument_name=instr2_name, amount=self.size, side=ORDER_SIDE_SELL)
-
+                    print(instr1_order)
                     await self.telegram_bot.notify_new_orders_two_instruments(spread_price=spread_price,
                                                                               order1=instr1_name,
                                                                               order2=instr2_name,
@@ -302,7 +297,7 @@ class TradingBot:
             # break
 
     async def send_strategy_info(self):
-        await asyncio.sleep(5.5)
+        await asyncio.sleep(10)
 
         updates_interval = config['trading_parameters']['send_updates_interval']
 

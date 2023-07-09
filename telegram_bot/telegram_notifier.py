@@ -10,14 +10,14 @@ class TelegramNotifier:
         self.bot = telegram.Bot(token=bot_token)
         self.chat_id = chat_id
 
-    async def send_message(self, message):
+    async def send_message(self, message, parse_mode="Markdown"):
         account_name = config['account_name']
         platform_name = config['trading_parameters']['platform']
 
-        message_header = f'Account: {account_name} \n' \
-                         f'Platform: {platform_name}'
+        message_header = f'*Account:* {account_name} \n' \
+                         f'*Platform*: {platform_name}'
         message = f'{message_header}\n \n{message}'
-        await self.bot.send_message(chat_id=self.chat_id, text=message)
+        await self.bot.send_message(chat_id=self.chat_id, text=message, parse_mode=parse_mode)
 
     async def account_info_two_instruments(self, current_deposit,
                                            instr1_name, instr2_name,
@@ -27,24 +27,23 @@ class TelegramNotifier:
 
         start_deposit = config['trading_parameters']['start_deposit']
 
-        message = f'Start deposit: {start_deposit} USD \n' \
-            f'Current deposit: {current_deposit} USD (PnL: {round((current_deposit/start_deposit - 1) * 100, 8)} %)\n' \
-            f'Instrument 1: {instr1_name} \n' \
-            f'Instrument 2: {instr2_name} \n' \
-            f'Current amount of instrument 1: {instr1_amount} \n' \
-            f'Current amount of instrument 2: {instr2_amount} \n' \
-            f'Working time: {timedelta_to_str(working_time)} \n'
+        message = f'*Start deposit:* {start_deposit} USD \n' \
+            f'*Current deposit:* {current_deposit} USD (PnL: {round((current_deposit/start_deposit - 1) * 100, 8)} %)\n' \
+            f'*Current amount* of {instr1_name}: {instr1_amount} \n' \
+            f'*Current amount* of {instr2_name}: {instr2_amount} \n' \
+            f'*Working time:* {timedelta_to_str(working_time)} \n'
 
         # f'Initial amount of instrument 1: {instr1_initial_amount} \n' \
         # f'Initial amount of instrument 2: {instr2_initial_amount} \n' \
 
         await self.send_message(message)
 
-    async def notify_new_orders_two_instruments(self, spread_price, order1, order2, order1_type, order2_type):
+    async def notify_grid_level_two_instrumets(self, grid_level, spread_price, order1, order2, order1_type, order2_type):
         if not (order1_type == 'market' and order2_type == 'market'):
             raise ValueError('Both orders should be market orders')
 
-        message = f"Reached grid level \n" \
+        message = f"Reached *grid level* \n" \
+                  f"Grid level: {grid_level} \n" \
                   f"Current spread price: {spread_price} \n" \
                   f"Executed two orders: \n" \
                   f"{order1} \n" \
@@ -56,7 +55,7 @@ class TelegramNotifier:
         if not (order1_type == 'market' and order2_type == 'market'):
             raise ValueError('Both orders should be market orders')
 
-        message = f"Reached take profit level \n" \
+        message = f"Reached *take profit* level \n" \
                   f"Take profit level: {take_profit_level} \n" \
                   f"Current spread price: {spread_price} \n" \
                   f"Executed two orders: \n" \

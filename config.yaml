@@ -13,7 +13,7 @@ trading_parameters:
   instrument_1: "ETH-PERPETUAL"
   instrument_2: "BTC-PERPETUAL"
   spread_operator: "/"
-  grid_direction: "long"
+  grid_direction: "short"
   start_deposit: 1000
   grid_step: 0.000001
   max_orders: 10

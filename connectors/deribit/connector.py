@@ -12,6 +12,7 @@ from utils import load_config
 config = load_config('config.yaml')
 
 
+
 class DeribitConnection(AbstractConnector):
     def __init__(self, client_id, client_secret):
         self.client_id = client_id
