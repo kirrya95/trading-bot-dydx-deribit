@@ -59,13 +59,33 @@ class BaseTradingBot(ABC):
             )
             return res
 
+    async def get_asset_amount_usdc(self, instrument_name: str):
+        currency = await self.conn.get_currency_from_instrument(
+            instrument_name=instrument_name)
+        amount = await self.conn.get_position(currency=currency, instrument_name=instrument_name)
+        return amount
+
     async def send_strategy_info(self):
         await asyncio.sleep(2)
         instr1_name = config['trading_parameters']['instrument_1']
         instr2_name = config['trading_parameters']['instrument_2']
         updates_interval = config['trading_parameters']['send_updates_interval']
 
-        if instr2_name != '-':
+        if instr2_name == '-':
+            while True:
+                async with self.lock:
+                    currency1 = await self.conn.get_currency_from_instrument(instrument_name=instr1_name)
+                    instr1_amount = await self.conn.get_position(currency=currency1, instrument_name=instr1_name)
+                    working_time = round(time.time() - self.start_timestamp)
+
+                    await self.telegram_bot.account_info_one_instrument(
+                        current_deposit=0,
+                        instr_name=instr1_name,
+                        instr_amount=instr1_amount,
+                        working_time=working_time
+                    )
+                await asyncio.sleep(updates_interval)
+        elif instr2_name != '-':
             while True:
                 async with self.lock:
                     currency1 = await self.conn.get_currency_from_instrument(instrument_name=instr1_name)

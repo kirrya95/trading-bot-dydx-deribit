@@ -10,7 +10,6 @@ from constants import *
 from trading_bot.base_bot import BaseTradingBot
 
 
-
 config = load_config('config.yaml')
 
 
@@ -37,6 +36,8 @@ class TradingBotTwoInstruments(BaseTradingBot):
 
         self.initial_amount1 = None
         self.initial_amount2 = None
+        self.current_amount1 = None
+        self.current_amount2 = None
 
         self.active_spreads = []
         self.active_positions = []
@@ -79,17 +80,20 @@ class TradingBotTwoInstruments(BaseTradingBot):
         return instr1_price, instr2_price, spread_price
 
     async def get_amounts(self):
-        currency1 = await self.conn.get_currency_from_instrument(
-            instrument_name=self.instr1_name)
-        initial_amount1 = await self.conn.get_position(currency=currency1, instrument_name=self.instr1_name)
+        # currency1 = await self.conn.get_currency_from_instrument(
+        #     instrument_name=self.instr1_name)
+        # amount1 = await self.conn.get_position(currency=currency1, instrument_name=self.instr1_name)
 
-        currency2 = await self.conn.get_currency_from_instrument(
-            instrument_name=self.instr2_name)
-        initial_amount2 = await self.conn.get_position(currency=currency2, instrument_name=self.instr2_name)
-
-        return initial_amount1, initial_amount2
+        # currency2 = await self.conn.get_currency_from_instrument(
+        #     instrument_name=self.instr2_name)
+        # amount2 = await self.conn.get_position(currency=currency2, instrument_name=self.instr2_name)
+        amount1 = self.get_asset_amount_usdc(instrument_name=self.instr1_name)
+        amount2 = self.get_asset_amount_usdc(instrument_name=self.instr2_name)
+        return amount1, amount2
 
     async def calculate_local_grid(self):
+        if self.initial_spread_price is None:
+            raise ValueError('Initial spread price is not set')
         local_grid_lows = [self.initial_spread_price - self.grid_step *
                            i for i in range(1, self.orders_in_market+1)]
         local_grid_highs = [self.initial_spread_price + self.grid_step * i
@@ -109,12 +113,12 @@ class TradingBotTwoInstruments(BaseTradingBot):
         else:
             return
 
-        await self.telegram_bot.notify_take_profit_two_instrumets(take_profit_level=tp_spread,
-                                                                  spread_price=self.current_spread_price,
-                                                                  order1=self.instr1_name,  # TODO: change to orders
-                                                                  order2=self.instr2_name,
-                                                                  order1_type=self.order1_type,
-                                                                  order2_type=self.order2_type)
+        await self.telegram_bot.notify_take_profit_two_instruments(take_profit_level=tp_spread,
+                                                                   spread_price=self.current_spread_price,
+                                                                   order1=self.instr1_name,  # TODO: change to orders
+                                                                   order2=self.instr2_name,
+                                                                   order1_type=self.order1_type,
+                                                                   order2_type=self.order2_type)
 
     async def check_for_grid_level(self, grid_level):
         if grid_level in self.active_spreads:
@@ -137,12 +141,12 @@ class TradingBotTwoInstruments(BaseTradingBot):
         else:
             raise ValueError('Incorrect side. Should be either long or short')
 
-        await self.telegram_bot.notify_grid_level_two_instrumets(grid_level=grid_level,
-                                                                 spread_price=self.current_spread_price,
-                                                                 order1=self.instr1_name,  # TODO: change to orders
-                                                                 order2=self.instr2_name,
-                                                                 order1_type=self.order1_type,
-                                                                 order2_type=self.order2_type)
+        await self.telegram_bot.notify_grid_level_two_instruments(grid_level=grid_level,
+                                                                  spread_price=self.current_spread_price,
+                                                                  order1=self.instr1_name,  # TODO: change to orders
+                                                                  order2=self.instr2_name,
+                                                                  order1_type=self.order1_type,
+                                                                  order2_type=self.order2_type)
 
     async def run(self):
         amount_usdc_to_have = config['trading_parameters']['start_deposit'] / 2
