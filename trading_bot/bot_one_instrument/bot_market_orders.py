@@ -22,40 +22,6 @@ class TradingBotOneInstrumentMarketOrders(BaseTradingBotOneInstrument):
                  telegram_bot: TelegramNotifier):
         super().__init__(conn=conn, telegram_bot=telegram_bot)
 
-        # self.instr_name = config['trading_parameters']['instrument_1']
-
-        # self.initial_instr_price = None
-        # self.current_instr_price = None
-        # self.initial_amount = None
-        # self.current_amount = None
-
-        # self.active_asset_prices = []
-        # self.active_positions = []
-        # self.take_profit_asset_prices = []
-
-    # async def get_instrument_price(self):
-    #     if self.side != 'long' and self.side != 'short':
-    #         raise ValueError('Incorrect side. Should be either long or short')
-
-    #     if self.side == 'long':
-    #         instr_price = (await self.conn.get_asset_price(
-    #             instrument_name=self.instr_name))[1]
-    #     elif self.side == 'short':
-    #         instr_price = (await self.conn.get_asset_price(
-    #             instrument_name=self.instr_name))[0]
-
-    #     return instr_price
-
-    # async def calculate_local_grid(self):
-    #     if self.initial_instr_price is None:
-    #         raise ValueError('Initial instrument price is not set')
-    #     local_grid_lows = [self.initial_instr_price - self.grid_step *
-    #                        i for i in range(1, self.orders_in_market+1)]
-    #     local_grid_highs = [self.initial_instr_price + self.grid_step * i
-    #                         for i in range(1, self.orders_in_market+1)]
-    #     local_grid = local_grid_lows + local_grid_highs
-    #     return local_grid
-
     async def check_for_grid_level_take_profit(self, tp_price: float):
         if self.side == 'long' and self.current_instr_price >= tp_price:
             instr_order = await self.conn.execute_market_order(instrument_name=self.instr_name, amount=self.size, side=ORDER_SIDE_SELL)

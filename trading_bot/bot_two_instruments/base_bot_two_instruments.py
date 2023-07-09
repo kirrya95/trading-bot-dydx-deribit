@@ -50,10 +50,10 @@ class BaseTradingBotTwoInstruments(BaseTradingBot):
             spread_price = instr1_price / instr2_price
         elif spread_operator == '*':
             spread_price = instr1_price * instr2_price
-        # elif spread_operator == '+':
-        #     spread_price = instr1_price + instr2_price
-        # elif spread_operator == '-':
-        #     spread_price = instr1_price - instr2_price
+        elif spread_operator == '+':
+            spread_price = instr1_price + instr2_price
+        elif spread_operator == '-':
+            spread_price = instr1_price - instr2_price
         else:
             raise ValueError(f"Invalid spread operator: {spread_operator}")
         return spread_price
@@ -80,13 +80,6 @@ class BaseTradingBotTwoInstruments(BaseTradingBot):
         return instr1_price, instr2_price, spread_price
 
     async def get_amounts(self):
-        # currency1 = await self.conn.get_currency_from_instrument(
-        #     instrument_name=self.instr1_name)
-        # amount1 = await self.conn.get_position(currency=currency1, instrument_name=self.instr1_name)
-
-        # currency2 = await self.conn.get_currency_from_instrument(
-        #     instrument_name=self.instr2_name)
-        # amount2 = await self.conn.get_position(currency=currency2, instrument_name=self.instr2_name)
         amount1 = await self.get_asset_amount_usdc(instrument_name=self.instr1_name)
         amount2 = await self.get_asset_amount_usdc(instrument_name=self.instr2_name)
         return amount1, amount2

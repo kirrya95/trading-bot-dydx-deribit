@@ -8,6 +8,7 @@ credentials:
     client_secret: "QXHN8xGo9e2WSs0y4Z0uf1bqVmh8LKbVHtpnvuV0mn8"
 trading_parameters:
   platform: "deribit"
+  orders_type: "market" # "limit" or "market"
   mainnet: false
   start_datetime: "2023-07-07 17:30:00"
   instrument_1: "ETH-PERPETUAL"
@@ -18,7 +19,7 @@ trading_parameters:
   grid_step: 0.000001
   max_orders: 10
   orders_in_market: 4
-  order_size: 50
+  order_size: 50 # in usd
   take_profit_spread_delta: 0.0000005
   take_profit_deposit: 0.1 # 10%
   send_updates_interval: 10 # seconds
