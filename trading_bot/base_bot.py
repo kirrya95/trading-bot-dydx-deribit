@@ -75,10 +75,11 @@ class BaseTradingBot(ABC):
         return amount
 
     async def send_strategy_info(self):
-        await asyncio.sleep(2)
         instr1_name = config['trading_parameters']['instrument_1']
         instr2_name = config['trading_parameters']['instrument_2']
         updates_interval = config['trading_parameters']['send_updates_interval']
+        await asyncio.sleep(await self.get_seconds_until_start())
+        await asyncio.sleep(updates_interval)
 
         if instr2_name == '-':
             while True:

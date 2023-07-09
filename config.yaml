@@ -22,9 +22,6 @@ trading_parameters:
   take_profit_spread_delta: 0.0000005
   take_profit_deposit: 0.1 # 10%
   send_updates_interval: 10 # seconds
-  # commission_percentage: 0.005
-  # limit_order_expiration_delay_seconds: 31536000
-  # limit_fee: 0.0015
 platforms:
   dydx_testnet:
     host: "https://api.stage.dydx.exchange"

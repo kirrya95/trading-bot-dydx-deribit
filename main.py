@@ -12,7 +12,7 @@ from telegram_bot import TelegramNotifier
 
 # from trading_bot.trading_bot import TradingBot
 
-from trading_bot import TradingBotOneInstrument, TradingBotTwoInstruments
+from trading_bot import TradingBotOneInstrumentMarketOrders, TradingBotTwoInstruments
 
 from utils import load_config
 
@@ -39,7 +39,7 @@ async def main():
             telegram_bot=telegram_notifier,
         )
     else:
-        trading_bot = TradingBotOneInstrument(
+        trading_bot = TradingBotOneInstrumentMarketOrders(
             conn=deribit_connection,
             telegram_bot=telegram_notifier,
         )
