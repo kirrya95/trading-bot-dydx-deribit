@@ -4,7 +4,8 @@ import asyncio
 
 from telegram_bot import TelegramNotifier
 from connectors import dYdXConnection, DeribitConnection
-from utils import load_config
+from utils import load_config, to_utc_timestamp
+from constants import *
 
 
 NDIGITS_ETH_PRICE_ROUNDING = 2
@@ -13,12 +14,10 @@ NDIGITS_BTC_PRICE_ROUNDING = 1
 # NDIGITS_ETH_AMOUNT_ROUNDING = 3
 # NDIGITS_BTC_AMOUNT_ROUNDING = 3
 
-# ------------ Order Side ------------
-ORDER_SIDE_BUY = 'BUY'
-ORDER_SIDE_SELL = 'SELL'
-
 
 config = load_config('config.yaml')
+
+lock = asyncio.Lock()
 
 
 class TradingBot:
@@ -36,14 +35,31 @@ class TradingBot:
         self.platform = config['trading_parameters']['platform']
         self.size = float(config['trading_parameters']['order_size'])
         self.grid_step = float(config['trading_parameters']['grid_step'])
+        self.take_profit_spread_delta = float(
+            config['trading_parameters']['take_profit_spread_delta'])
         self.side = config['trading_parameters']['grid_direction']
+        self.start_timestamp = to_utc_timestamp(
+            config['trading_parameters']['start_datetime'])
 
-        self.last_triggered_price = None
+        self.number_of_instruments = 1 if config['trading_parameters']['instrument_2'] == '-' else 2
 
-        self.grid_orders = []
-        self.take_profit_orders = []
+        self.initial_instr1_price = None
+        self.initial_instr2_price = None
+        self.initial_spread_price = None
 
-    async def set_initial_instr_prices(self):
+        self.initial_amount1_assets = None
+        self.initial_amount2_assets = None
+
+        self.current_instr1_price = None
+        self.current_instr2_price = None
+
+        # self.grid_orders = []
+
+        self.active_spreads = []
+        self.active_positions = []
+        self.take_profit_spreads = []
+
+    async def set_initial_instr_prices_and_amounts(self):
         instr1 = config['trading_parameters']['instrument_1']
         instr2 = config['trading_parameters']['instrument_2']
 
@@ -51,18 +67,39 @@ class TradingBot:
             self.initial_instr1_price = (await self.conn.get_asset_price(
                 instrument_name=instr1))[1]
             if instr2 != '-':
-                self.initial_instr2_price = self.conn.get_asset_price(
-                    instrument_name=instr2)[0]
+                self.initial_instr2_price = (await self.conn.get_asset_price(
+                    instrument_name=instr2))[0]
             else:
                 self.initial_instr2_price = None
         elif self.side == 'short':
             self.initial_instr1_price = (await self.conn.get_asset_price(
                 instrument_name=instr1))[0]
             if instr2 != '-':
-                self.initial_instr2_price = self.conn.get_asset_price(
-                    instrument_name=instr2)[1]
+                self.initial_instr2_price = (await self.conn.get_asset_price(
+                    instrument_name=instr2))[1]
             else:
                 self.initial_instr2_price = None
+        else:
+            raise ValueError(
+                f"Invalid grid direction: {self.side}. Should be 'long' or 'short'")
+
+        # setting initial spread price
+        if instr2 != '-':
+            self.initial_spread_price = await self.get_spread_price(
+                instr1_price=self.initial_instr1_price,
+                instr2_price=self.initial_instr2_price
+            )
+
+        # setting initial amounts
+        currency1 = await self.conn.get_currency_from_instrument(
+            instrument_name=instr1)
+        print(await self.conn.get_position(currency=currency1, instrument_name=instr1), "HEREEE")
+        self.initial_amount1_assets = await self.conn.get_position(currency=currency1, instrument_name=instr1) / self.initial_instr1_price
+
+        if instr2 != '-':
+            currency2 = await self.conn.get_currency_from_instrument(
+                instrument_name=instr2)
+            self.initial_amount2_assets = await self.conn.get_position(currency=currency2, instrument_name=instr2) / self.initial_instr2_price
 
     async def tidy_instrument_amount(self,
                                      instrument_name: str,
@@ -72,7 +109,7 @@ class TradingBot:
         # instr_price = (await self.conn.get_asset_price(
         #     instrument_name=instrument_name))[1]
 
-        currency = self.conn.get_currency_from_instrument(
+        currency = await self.conn.get_currency_from_instrument(
             instrument_name=instrument_name)
 
         instrument_amount_usdc = await self.conn.get_position(currency=currency, instrument_name=instrument_name)
@@ -102,16 +139,8 @@ class TradingBot:
 
         return spread_price
 
-    # TODO: implement
-    async def get_take_profit_price(self, spread_price: float) -> float:
-        self.grid_step
-        self.side
-        # self.percent
-
-        # return 1 - sum()
-
-    def remove_all_orders(self):
-        self.conn.cancel_all_orders()
+    # def remove_all_orders(self):
+    #     self.conn.cancel_all_orders()
 
     # async def create_grid_orders(self, instrument, instrument_price: float):
     #     # spread_price = self.get_spread_price(instr1_price, instr2_price)
@@ -131,18 +160,18 @@ class TradingBot:
     #             # print(res)
     #             # break
 
-    async def create_grid_orders_one_instrument(self, instrument_name: str, instrument_price: float):
-        number_of_orders = config['trading_parameters']['orders_in_market']
+    # async def create_grid_orders_one_instrument(self, instrument_name: str, instrument_price: float):
+    #     number_of_orders = config['trading_parameters']['orders_in_market']
 
-        if self.side == 'long':
-            for i in range(1, number_of_orders+1):
-                grid_price = instrument_price - self.grid_step * i
-                print(grid_price)
-                res = await self.conn.create_limit_order(
-                    instrument_name=instrument_name, amount=self.size, price=grid_price, action=ORDER_SIDE_BUY)
-                self.grid_orders.append(res)
-                print(res)
-                # break
+    #     if self.side == 'long':
+    #         for i in range(1, number_of_orders+1):
+    #             grid_price = instrument_price - self.grid_step * i
+    #             print(grid_price)
+    #             res = await self.conn.create_limit_order(
+    #                 instrument_name=instrument_name, amount=self.size, price=grid_price, action=ORDER_SIDE_BUY)
+    #             self.grid_orders.append(res)
+    #             print(res)
+    #             # break
 
     async def run_bot_one_instrument(self, instrument_name: str):
         min_amount_usdc_to_have = config['trading_parameters']['start_deposit'] / 2
@@ -185,25 +214,125 @@ class TradingBot:
 
     async def run_bot_two_instruments(self, instr1_name: str, instr2_name: str):
         min_amount_usdc_to_have = config['trading_parameters']['start_deposit'] / 2
+        current_timestamp = time.time()
+        # ensuring that bot starts working at the right time
+        if (current_timestamp - self.start_timestamp) < 0:
+            await asyncio.sleep(self.start_timestamp - current_timestamp)
 
         await self.tidy_instrument_amount(instrument_name=instr1_name, min_amount_usdc_to_have=min_amount_usdc_to_have)
         await self.tidy_instrument_amount(instrument_name=instr2_name, min_amount_usdc_to_have=min_amount_usdc_to_have)
+        await self.set_initial_instr_prices_and_amounts()
 
         while True:
-            instr1_price = (await self.conn.get_asset_price(
-                instrument_name=instr1_name))[1]
-            instr2_price = (await self.conn.get_asset_price(
-                instrument_name=instr2_name))[1]
-            self.create_grid_orders(instr1_price, instr2_price)
-            await asyncio.sleep(5)
+
+            if self.side == 'long':
+                # if side is long, then we buy instr1 and sell instr2
+                self.current_instr1_price = (await self.conn.get_asset_price(
+                    instrument_name=instr1_name))[1]
+                self.current_instr2_price = (await self.conn.get_asset_price(
+                    instrument_name=instr2_name))[0]
+            elif self.side == 'short':
+                # if side is short, then we sell instr1 and buy instr2
+                self.current_instr1_price = (await self.conn.get_asset_price(
+                    instrument_name=instr1_name))[0]
+                self.current_instr2_price = (await self.conn.get_asset_price(
+                    instrument_name=instr2_name))[1]
+            else:
+                raise ValueError('Side is neither long nor short')
+
+            # calculating spread price
+            spread_price = await self.get_spread_price(self.current_instr1_price, self.current_instr2_price)
+
+            local_grid_lows = [self.initial_spread_price - self.grid_step *
+                               i for i in range(1, config['trading_parameters']['orders_in_market']+1)]
+            local_grid_highs = [self.initial_spread_price + self.grid_step * i
+                                for i in range(1, config['trading_parameters']['orders_in_market']+1)]
+            local_grid = local_grid_lows + local_grid_highs
+
+            print('spread price:', spread_price)
+            print('local grid:', local_grid)
+
+            print('take profit spreads:', self.take_profit_spreads)
+
+            if self.side == 'long':
+                for tp_spread in self.take_profit_spreads:
+                    if spread_price >= tp_spread:
+                        instr1_order = await self.conn.execute_market_order(instrument_name=instr1_name, amount=self.size, side=ORDER_SIDE_SELL)
+                        instr2_order = await self.conn.execute_market_order(instrument_name=instr2_name, amount=self.size, side=ORDER_SIDE_BUY)
+                        await self.telegram_bot.notify_take_profit_two_instrumets(take_profit_level=tp_spread,
+                                                                                  spread_price=spread_price,
+                                                                                  order1=instr1_name,
+                                                                                  order2=instr2_name,
+                                                                                  order1_type='market',
+                                                                                  order2_type='market')
+                        self.take_profit_spreads.remove(tp_spread)
+                for grid_spread in local_grid:
+                    if grid_spread >= self.initial_spread_price:
+                        continue
+                    if spread_price > grid_spread:
+                        continue
+                    if grid_spread in self.active_spreads:
+                        continue
+
+                    instr1_order = await self.conn.execute_market_order(instrument_name=instr1_name, amount=self.size, side=ORDER_SIDE_BUY)
+                    instr2_order = await self.conn.execute_market_order(instrument_name=instr2_name, amount=self.size, side=ORDER_SIDE_SELL)
+                    print(instr1_order)
+                    await self.telegram_bot.notify_new_orders_two_instruments(spread_price=spread_price,
+                                                                              order1=instr1_name,
+                                                                              order2=instr2_name,
+                                                                              order1_type='market',
+                                                                              order2_type='market',)
+                    self.active_spreads.append(grid_spread)
+                    self.take_profit_spreads.append(
+                        grid_spread + self.take_profit_spread_delta)
+
+            elif self.side == 'short':
+                pass
+
+            await asyncio.sleep(1)
 
             # current_price = self.conn.get_asset_price(
             #     instrument_name=instrument_name)
             # await self.create_grid_orders_one_instrument(instrument_name=instrument_name, instrument_price=self.initial_instr1_price)
-            break
+            # break
 
-    async def listen_to_orders(self):
-        pass
+    async def send_strategy_info(self):
+        await asyncio.sleep(10)
+
+        updates_interval = config['trading_parameters']['send_updates_interval']
+
+        if self.number_of_instruments == 2:
+
+            instr1_name = config['trading_parameters']['instrument_1']
+            instr2_name = config['trading_parameters']['instrument_2']
+            # instr1_initial_amount = 1.5
+            # instr2_initial_amount = 1.7
+
+            while True:
+                currency1 = await self.conn.get_currency_from_instrument(instrument_name=instr1_name)
+                currency2 = await self.conn.get_currency_from_instrument(instrument_name=instr2_name)
+                print(currency1, currency2)
+                instr1_amount = await self.conn.get_position(currency=currency1, instrument_name=instr1_name)
+                instr2_amount = await self.conn.get_position(currency=currency2, instrument_name=instr2_name)
+                print(instr1_amount, instr2_amount)
+                working_time = round(time.time() - self.start_timestamp)
+                current_deposit = instr1_amount + instr2_amount
+
+                await self.telegram_bot.account_info_two_instruments(
+                    current_deposit=current_deposit,
+                    instr1_name=instr1_name,
+                    instr2_name=instr2_name,
+                    # instr1_initial_amount=instr1_initial_amount,
+                    # instr2_initial_amount=instr2_initial_amount,
+                    instr1_amount=instr1_amount,
+                    instr2_amount=instr2_amount,
+                    working_time=working_time
+                )
+                print('hi')
+                await asyncio.sleep(updates_interval)
+
+    # async def listen_to_orders(self):
+    #     pass
 
     # async def run_dydx_bot(self):
     #     # removing all previous orders before the start

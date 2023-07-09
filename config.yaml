@@ -1,3 +1,4 @@
+account_name: "account 1"
 credentials:
   dydx:
     eth_private_key: "0x1efce8061b1ccc25a2bfc821ef79f958784862e0dcf92f9f766eb8a03473a378"
@@ -8,21 +9,21 @@ credentials:
 trading_parameters:
   platform: "deribit"
   mainnet: false
-  start_date: "2023-07-01T00:00:00"
-  instrument_1: "BTC-PERPETUAL"
-  instrument_2: "-"
+  start_datetime: "2023-07-07 17:30:00"
+  instrument_1: "ETH-PERPETUAL"
+  instrument_2: "-" # "BTC-PERPETUAL"
   spread_operator: "/"
-  grid_direction: "long"
+  grid_direction: "short"
   start_deposit: 1000
-  grid_step: 1000 # 0.00005
+  grid_step: 0.000001
   max_orders: 10
   orders_in_market: 4
   order_size: 50
-  take_profit_for_order: 0.05
+  take_profit_spread_delta: 0.0000005
   # take_profit_deposit: 0.1
-  # refresh_interval_ms: 1000
+  send_updates_interval: 10 # seconds
   # commission_percentage: 0.005
-  limit_order_expiration_delay_seconds: 31536000
+  # limit_order_expiration_delay_seconds: 31536000
   # limit_fee: 0.0015
 platforms:
   dydx_testnet:
