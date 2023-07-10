@@ -22,7 +22,6 @@ trading_parameters:
   order_size: 50 # in usd
   take_profit_spread_delta: 0.5
   take_profit_deposit: 0.1 # 10%
-  send_updates_interval: 10 # seconds
 platforms:
   dydx_testnet:
     host: "https://api.stage.dydx.exchange"
@@ -37,5 +36,5 @@ platforms:
 telegram:
   bot_token: ""
   chat_id: ""
-  # reporting_interval: 3600
+  reporting_interval: 10
 web3_provider: "http://localhost:8545"

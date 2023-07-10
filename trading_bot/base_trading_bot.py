@@ -80,7 +80,7 @@ class BaseTradingBot(ABC):
     async def send_strategy_info(self):
         instr1_name = config['trading_parameters']['instrument_1']
         instr2_name = config['trading_parameters']['instrument_2']
-        updates_interval = config['trading_parameters']['send_updates_interval']
+        updates_interval = config['telegram']['reporting_interval']
         await asyncio.sleep(await self.get_seconds_until_start())
         await asyncio.sleep(updates_interval)
 
