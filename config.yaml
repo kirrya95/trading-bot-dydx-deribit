@@ -1,11 +1,11 @@
 account_name: "account 1"
 credentials:
   dydx:
-    eth_private_key: "0x1efce8061b1ccc25a2bfc821ef79f958784862e0dcf92f9f766eb8a03473a378"
-    stark_private_key: "0x6ad484e0209306880be913c7c35a975baa454ebce82fc59316e17edefc696a4"
+    eth_private_key: ""
+    stark_private_key: ""
   deribit:
-    client_id: "6_LsHSTh"
-    client_secret: "QXHN8xGo9e2WSs0y4Z0uf1bqVmh8LKbVHtpnvuV0mn8"
+    client_id: ""
+    client_secret: ""
 trading_parameters:
   platform: "deribit"
   orders_type: "limit" # "limit" or "market"
@@ -35,7 +35,7 @@ platforms:
   deribit_mainnet:
     websocket_url: "wss://www.deribit.com/ws/api/v2"
 telegram:
-  bot_token: "6136357597:AAFM9LUyFkbAhq8kHhNM-YKBEgocHg8jVQM"
-  chat_id: "-1001855077863"
+  bot_token: ""
+  chat_id: ""
   # reporting_interval: 3600
 web3_provider: "http://localhost:8545"
