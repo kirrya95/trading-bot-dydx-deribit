@@ -1,13 +1,16 @@
 # from dydx3.constants import ORDER_SIDE_BUY, ORDER_SIDE_SELL
 # from dydx3.constants import ORDER_TYPE_TAKE_PROFIT, ORDER_TYPE_LIMIT, ORDER_TYPE_MARKET
+from connectors import AbstractConnector
 import time
 # from dydx3 import Client
-from web3 import Web3
+# from web3 import Web3
 
 # from dydx3.constants import ORDER_STATUS_FILLED
 # from dydx3.helpers.request_helpers import generate_now_iso
 
-from connectors import AbstractConnector
+import websockets
+from websockets import client as websockets_client
+websockets.client = websockets_client
 
 
 class dYdXConnection(AbstractConnector):
