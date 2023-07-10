@@ -14,13 +14,13 @@ trading_parameters:
   instrument_1: "ETH-PERPETUAL"
   instrument_2: "-"
   spread_operator: "/"
-  grid_direction: "short"
+  grid_direction: "long"
   start_deposit: 1000
-  grid_step: 0.000001
+  grid_step: 1
   max_orders: 10
   orders_in_market: 4
   order_size: 50 # in usd
-  take_profit_spread_delta: 0.0000005
+  take_profit_spread_delta: 0.5
   take_profit_deposit: 0.1 # 10%
   send_updates_interval: 10 # seconds
 platforms:

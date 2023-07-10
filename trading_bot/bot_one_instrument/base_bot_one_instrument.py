@@ -27,6 +27,9 @@ class BaseTradingBotOneInstrument(BaseTradingBot):
         self.initial_amount = None
         self.current_amount = None
 
+        self.initial_usdc_balance = None
+        self.current_usdc_balance = None
+
         self.active_asset_prices = []
         self.active_positions = []
         self.take_profit_asset_prices = []

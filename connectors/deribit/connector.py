@@ -143,7 +143,9 @@ class DeribitConnection(AbstractConnector):
 
     async def cancel_all_orders(self, instrument_name):
 
-        orders = await self.get_all_orders(currency=instrument_name.split()[0],
+        currency = await self.get_currency_from_instrument(instrument_name)
+
+        orders = await self.get_all_orders(currency=currency,
                                            instrument_name=instrument_name)
 
         cancel_tasks = [self.cancel_order(
@@ -290,3 +292,30 @@ class DeribitConnection(AbstractConnector):
         else:
             raise ValueError(
                 f"Failed to get positions: {result['error'] if 'error' in result else 'Unknown error'}")
+
+    async def get_balance(self, currency):
+        currency = currency.upper()
+        if currency not in ['BTC', 'ETH', 'USDC']:
+            raise ValueError(
+                'Invalid currency. Please choose either "BTC", "ETH" or "USDC".')
+
+        msg = {
+            "jsonrpc": "2.0",
+            "id": 5611,
+            "method": "private/get_deposits",
+            "params": {
+                "currency": currency,
+                "count": 10,
+                "offset": 0
+            }
+        }
+
+        await self.connection.send(json.dumps(msg))
+        response = await self.connection.recv()
+        result = json.loads(response)
+
+        if 'result' in result:
+            return result['result']
+        else:
+            raise ValueError(
+                f"Failed to get balance: {result['error'] if 'error' in result else 'Unknown error'}")

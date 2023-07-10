@@ -30,6 +30,9 @@ class BaseTradingBot(ABC):
             config['trading_parameters']['start_datetime'])
         self.orders_in_market = config['trading_parameters']['orders_in_market']
 
+        self.start_deposit = config['trading_parameters']['start_deposit']
+        self.initial_usdc_deposit_on_wallet = None
+
     async def get_seconds_until_start(self):
         current_timestamp = time.time()
         return max(self.start_timestamp - current_timestamp, 0)
@@ -87,9 +90,13 @@ class BaseTradingBot(ABC):
                     currency1 = await self.conn.get_currency_from_instrument(instrument_name=instr1_name)
                     instr1_amount = await self.conn.get_position(currency=currency1, instrument_name=instr1_name)
                     working_time = round(time.time() - self.start_timestamp)
+                    usdc_balance = (await self.conn.get_balance(currency="USDC"))['data'][0]['amount']
+                    # print(f"USDC balance: {usdc_balance}")
+                    current_deposit = (instr1_amount + usdc_balance) - \
+                        self.initial_usdc_deposit_on_wallet + self.start_deposit
 
                     await self.telegram_bot.account_info_one_instrument(
-                        current_deposit=0,
+                        current_deposit=current_deposit,
                         instr_name=instr1_name,
                         instr_amount=instr1_amount,
                         working_time=working_time
