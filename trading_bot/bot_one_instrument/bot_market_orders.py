@@ -45,7 +45,7 @@ class TradingBotOneInstrumentMarketOrders(BaseTradingBotOneInstrument):
             self.active_asset_prices.append(grid_level)
             self.take_profit_asset_prices.append(
                 grid_level + self.take_profit_step)
-        elif self.side == 'short' and self.current_instr_price <= grid_level:
+        elif self.side == 'short' :
             if grid_level <= self.initial_instr_price or self.current_instr_price < grid_level:
                 return
             instr_order = await self.conn.execute_market_order(instrument_name=self.instr_name, amount=self.size, side=ORDER_SIDE_BUY)

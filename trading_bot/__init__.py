@@ -3,4 +3,3 @@ from .bot_one_instrument import TradingBotOneInstrumentLimitOrders
 from .bot_two_instruments import TradingBotTwoInstrumentsMarketOrders
 from .bot_two_instruments import TradingBotTwoInstrumentsLimitOrders
 from .base_trading_bot import BaseTradingBot
-from .trading_bot import TradingBot

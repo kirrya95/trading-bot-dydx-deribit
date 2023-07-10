@@ -13,6 +13,7 @@ from telegram_bot import TelegramNotifier
 # from trading_bot.trading_bot import TradingBot
 
 from trading_bot import TradingBotOneInstrumentMarketOrders, TradingBotTwoInstrumentsMarketOrders
+from trading_bot import TradingBotOneInstrumentLimitOrders, TradingBotTwoInstrumentsLimitOrders
 
 from utils import load_config
 
@@ -33,16 +34,31 @@ async def main():
     )
     instr1 = config['trading_parameters']['instrument_1']
     instr2 = config['trading_parameters']['instrument_2']
+
+    orders_type = config['trading_parameters']['orders_type']
+
     if instr2 != '-':
-        trading_bot = TradingBotTwoInstrumentsMarketOrders(
-            conn=deribit_connection,
-            telegram_bot=telegram_notifier,
-        )
+        if orders_type == 'market':
+            trading_bot = TradingBotTwoInstrumentsMarketOrders(
+                conn=deribit_connection,
+                telegram_bot=telegram_notifier,
+            )
+        elif orders_type == 'limit':
+            trading_bot = TradingBotTwoInstrumentsLimitOrders(
+                conn=deribit_connection,
+                telegram_bot=telegram_notifier,
+            )
     else:
-        trading_bot = TradingBotOneInstrumentMarketOrders(
-            conn=deribit_connection,
-            telegram_bot=telegram_notifier,
-        )
+        if orders_type == 'market':
+            trading_bot = TradingBotOneInstrumentMarketOrders(
+                conn=deribit_connection,
+                telegram_bot=telegram_notifier,
+            )
+        elif orders_type == 'limit':
+            trading_bot = TradingBotOneInstrumentLimitOrders(
+                conn=deribit_connection,
+                telegram_bot=telegram_notifier,
+            )
     try:
         await asyncio.gather(
             trading_bot.run(),

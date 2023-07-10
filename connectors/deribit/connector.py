@@ -12,7 +12,6 @@ from utils import load_config
 config = load_config('config.yaml')
 
 
-
 class DeribitConnection(AbstractConnector):
     def __init__(self, client_id, client_secret):
         self.client_id = client_id
@@ -79,6 +78,27 @@ class DeribitConnection(AbstractConnector):
     #         data = message_data['params']['data']
     #         if data['order_state'] == 'filled':
     #             print(f"Order {data['order_id']} was filled.")
+
+    async def get_order(self, order_id):
+        message = {
+            "jsonrpc": "2.0",
+            "id": 42,  # can be any number
+            "method": "private/get_order_state",
+            "params": {
+                "order_id": order_id
+            }
+        }
+
+        await self.connection.send(json.dumps(message))
+        response = await self.connection.recv()
+        result = json.loads(response)
+
+        if 'result' in result:
+            order_data = result['result']
+            return order_data
+        else:
+            raise ValueError(
+                f"Failed to get order: {result['error']}")
 
     async def get_all_orders(self, currency, instrument_name):
         get_orders_message = {

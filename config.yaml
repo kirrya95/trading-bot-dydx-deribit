@@ -8,11 +8,11 @@ credentials:
     client_secret: "QXHN8xGo9e2WSs0y4Z0uf1bqVmh8LKbVHtpnvuV0mn8"
 trading_parameters:
   platform: "deribit"
-  orders_type: "market" # "limit" or "market"
+  orders_type: "limit" # "limit" or "market"
   mainnet: false
   start_datetime: "2023-07-07 17:30:00"
   instrument_1: "ETH-PERPETUAL"
-  instrument_2: "BTC-PERPETUAL"
+  instrument_2: "-"
   spread_operator: "/"
   grid_direction: "short"
   start_deposit: 1000
