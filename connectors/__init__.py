@@ -1,7 +1,3 @@
 from .abstract_connector import AbstractConnector
 from .deribit import *
-# from .dydx import *
-
-
-class dYdXConnection:
-    pass
+from .dydx import *
