@@ -4,8 +4,8 @@ import websockets
 from datetime import datetime
 import asyncio
 
-from dydx3.constants import ORDER_TYPE_LIMIT
-from dydx3.constants import MARKET_ETH_USD, MARKET_BTC_USD
+# from dydx3.constants import ORDER_TYPE_LIMIT
+# from dydx3.constants import MARKET_ETH_USD, MARKET_BTC_USD
 
 from connectors import dYdXConnection, DeribitConnection
 from telegram_bot import TelegramNotifier
