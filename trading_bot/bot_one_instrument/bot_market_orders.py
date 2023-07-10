@@ -71,6 +71,7 @@ class TradingBotOneInstrumentMarketOrders(BaseTradingBotOneInstrument):
         await self.tidy_instrument_amount(instrument_name=self.instr_name, amount_in_usdc_to_have=amount_usdc_to_have)
         self.initial_instr_price = await self.get_instrument_price()
         self.initial_amount = await self.get_asset_amount_usdc(instrument_name=self.instr_name)
+        self.initial_usdc_deposit_on_wallet = (await self.conn.get_balance(currency="USDC"))['data'][0]['amount']
 
         while True:
             async with self.lock:

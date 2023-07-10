@@ -89,6 +89,7 @@ class BaseTradingBot(ABC):
                 async with self.lock:
                     currency1 = await self.conn.get_currency_from_instrument(instrument_name=instr1_name)
                     instr1_amount = await self.conn.get_position(currency=currency1, instrument_name=instr1_name)
+                    print(f"Current {instr1_name} amount: {instr1_amount}")
                     working_time = round(time.time() - self.start_timestamp)
                     usdc_balance = (await self.conn.get_balance(currency="USDC"))['data'][0]['amount']
                     # print(f"USDC balance: {usdc_balance}")

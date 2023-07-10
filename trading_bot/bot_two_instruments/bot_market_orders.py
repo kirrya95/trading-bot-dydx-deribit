@@ -76,6 +76,7 @@ class TradingBotTwoInstrumentsMarketOrders(BaseTradingBotTwoInstruments):
         await self.tidy_instrument_amount(instrument_name=self.instr2_name, amount_in_usdc_to_have=amount_usdc_to_have)
         self.initial_instr1_price, self.initial_instr2_price, self.initial_spread_price = await self.get_instruments_prices()
         self.initial_amount1, self.initial_amount2 = await self.get_amounts()
+        self.initial_usdc_deposit_on_wallet = (await self.conn.get_balance(currency="USDC"))['data'][0]['amount']
 
         while True:
             async with self.lock:
