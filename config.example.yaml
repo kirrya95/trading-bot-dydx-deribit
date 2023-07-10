@@ -1,0 +1,41 @@
+account_name: "account 1"
+credentials:
+  dydx:
+    eth_private_key: ""
+    stark_private_key: ""
+  deribit:
+    client_id: ""
+    client_secret: ""
+trading_parameters:
+  platform: "deribit"
+  orders_type: "limit" # "limit" or "market"
+  mainnet: false
+  start_datetime: "2023-07-07 17:30:00"
+  instrument_1: "ETH-PERPETUAL"
+  instrument_2: "-"
+  spread_operator: "/"
+  grid_direction: "long"
+  start_deposit: 1000
+  grid_step: 1
+  max_orders: 10
+  orders_in_market: 4
+  order_size: 50 # in usd
+  take_profit_spread_delta: 0.5
+  take_profit_deposit: 0.1 # 10%
+  send_updates_interval: 10 # seconds
+platforms:
+  dydx_testnet:
+    host: "https://api.stage.dydx.exchange"
+    network_id: 5
+  dydx_mainnet:
+    host: "https://api.dydx.exchange"
+    network_id: 1
+  deribit_testnet:
+    websocket_url: "wss://test.deribit.com/ws/api/v2"
+  deribit_mainnet:
+    websocket_url: "wss://www.deribit.com/ws/api/v2"
+telegram:
+  bot_token: ""
+  chat_id: ""
+  # reporting_interval: 3600
+web3_provider: "http://localhost:8545"
