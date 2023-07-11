@@ -75,12 +75,12 @@ class TradingBotOneInstrumentLimitOrders(BaseTradingBotOneInstrument):
             # remove from active limit orders
             self.active_limit_orders.pop(grid_limit_order['order_id'])
             # create grid limit order
-            await self.conn.create_limit_order(instrument_name=self.instr_name,
-                                               amount=self.size,
-                                               price=grid_limit_order['price'],
-                                               action=grid_limit_order['direction'])
+            new_grid_limit_order = await self.conn.create_limit_order(instrument_name=self.instr_name,
+                                                                      amount=self.size,
+                                                                      price=grid_limit_order['price'],
+                                                                      action=grid_limit_order['direction'])
             self.active_limit_orders[grid_limit_order['order_id']
-                                     ] = grid_limit_order
+                                     ] = new_grid_limit_order
             return True
         else:
             return False
