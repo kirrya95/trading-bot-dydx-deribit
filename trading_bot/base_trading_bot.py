@@ -88,10 +88,14 @@ class BaseTradingBot(ABC):
             while True:
                 async with self.lock:
                     currency1 = await self.conn.get_currency_from_instrument(instrument_name=instr1_name)
-                    instr1_amount = await self.conn.get_position(currency=currency1, instrument_name=instr1_name)
-                    print(f"Current {instr1_name} amount: {instr1_amount}")
+                    _instr1_amount = await self.conn.get_position(currency=currency1, instrument_name=instr1_name)
+                    instr1_price = (await self.conn.get_asset_price(instrument_name=instr1_name))[0]
+                    instr1_amount = round(_instr1_amount / instr1_price, 8)
+                    print(
+                        f"Current {instr1_name} amount: {instr1_amount}")
                     working_time = round(time.time() - self.start_timestamp)
-                    usdc_balance = (await self.conn.get_balance(currency="USDC"))['data'][0]['amount']
+                    # usdc_balance = (await self.conn.get_balance(currency="USDC"))['data'][0]['amount']
+                    usdc_balance = 0
                     # print(f"USDC balance: {usdc_balance}")
                     current_deposit = (instr1_amount + usdc_balance) - \
                         self.initial_usdc_deposit_on_wallet + self.start_deposit

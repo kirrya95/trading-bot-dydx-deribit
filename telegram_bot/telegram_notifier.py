@@ -26,9 +26,9 @@ class TelegramNotifier:
                                           working_time):
         start_deposit = config['trading_parameters']['start_deposit']
         message = f'*Start deposit:* {start_deposit} USD \n' \
-                  f'*Current deposit:* {current_deposit} USD (PnL: {round((current_deposit/start_deposit - 1) * 100, 8)} %)\n' \
                   f'*Current amount* of {instr_name}: {instr_amount} \n' \
                   f'*Working time:* {timedelta_to_str(working_time)} \n'
+        #   f'*Current deposit:* {current_deposit} USD (PnL: {round((current_deposit/start_deposit - 1) * 100, 8)} %)\n' \
 
         await self.send_message(message=message)
 
