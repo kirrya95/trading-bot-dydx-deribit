@@ -57,7 +57,7 @@ class TradingBotOneInstrumentLimitOrders(BaseTradingBotOneInstrument):
                                           ] = limit_order_info
             await self.telegram_bot.send_message(
                 f'Limit order at the price {limit_order_info["price"]} was filled.'
-                f'Take profit order was with the price {take_profit_order["price"]} was created.')
+                f'Take profit order with the price {take_profit_order["price"]} was created.')
             return True
         else:
             return False
@@ -81,6 +81,9 @@ class TradingBotOneInstrumentLimitOrders(BaseTradingBotOneInstrument):
                                                                       action=grid_limit_order['direction'])
             self.active_limit_orders[new_grid_limit_order['order_id']
                                      ] = new_grid_limit_order
+            await self.telegram_bot.send_message(
+                f'Take profit order at the price {take_profit_order_info["price"]} was filled.'
+                f'Limit order with the price {new_grid_limit_order["price"]} was created.')
             return True
         else:
             return False
