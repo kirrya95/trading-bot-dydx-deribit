@@ -94,9 +94,9 @@ class TradingBotOneInstrumentLimitOrders(BaseTradingBotOneInstrument):
 
         await self.conn.cancel_all_orders(instrument_name=self.instr_name)
 
-        amount_usdc_to_have = 0  # we don't have to have any amount of asset at the start
+        # amount_usdc_to_have = 0  # we don't have to have any amount of asset at the start
         # tidy asset amount
-        await self.tidy_instrument_amount(instrument_name=self.instr_name, amount_in_usdc_to_have=amount_usdc_to_have)
+        # await self.tidy_instrument_amount(instrument_name=self.instr_name, amount_in_usdc_to_have=amount_usdc_to_have)
         self.initial_instr_price = await self.get_instrument_price()
         # self.initial_amount = await self.get_asset_amount_usdc(instrument_name=self.instr_name)
         # self.initial_usdc_deposit_on_wallet = (await self.conn.get_balance(currency="USDC"))['data'][0]['amount']
