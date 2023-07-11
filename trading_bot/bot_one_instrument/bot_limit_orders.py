@@ -79,7 +79,7 @@ class TradingBotOneInstrumentLimitOrders(BaseTradingBotOneInstrument):
                                                                       amount=self.size,
                                                                       price=grid_limit_order['price'],
                                                                       action=grid_limit_order['direction'])
-            self.active_limit_orders[grid_limit_order['order_id']
+            self.active_limit_orders[new_grid_limit_order['order_id']
                                      ] = new_grid_limit_order
             return True
         else:
