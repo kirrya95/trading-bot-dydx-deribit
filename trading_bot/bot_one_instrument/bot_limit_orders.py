@@ -92,7 +92,7 @@ class TradingBotOneInstrumentLimitOrders(BaseTradingBotOneInstrument):
         # sleep until start
         await asyncio.sleep(await self.get_seconds_until_start())
 
-        # await self.conn.cancel_all_orders(instrument_name=self.instr_name, kind=self.kind)
+        await self.conn.cancel_all_orders(instrument_name=self.instr_name, kind=self.kind)
 
         # amount_usdc_to_have = 0  # we don't have to have any amount of asset at the start
         # tidy asset amount
@@ -110,13 +110,13 @@ class TradingBotOneInstrumentLimitOrders(BaseTradingBotOneInstrument):
         print('currency:', currency)
 
         print(self.initial_instr_price)
-        
+
         # return
-        self.ndigits_rounding = NDIGITS_PRICES_ROUNDING[currency]
+        self.ndigits_rounding = NDIGITS_PRICES_ROUNDING[self.instr_name]
         local_grid = await self.calculate_local_grid()
 
         print(self.instr_name)
-        print(local_grid)
+        print('grid:', local_grid)
         # return
 
         for grid_level in local_grid:
@@ -125,7 +125,7 @@ class TradingBotOneInstrumentLimitOrders(BaseTradingBotOneInstrument):
             if self.side == 'long':
                 if grid_level >= self.initial_instr_price:
                     continue
-                # print(self.size)
+                print(self.size)
                 order = await self.conn.create_limit_order(instrument_name=self.instr_name,
                                                            amount=self.size,
                                                            price=grid_level,

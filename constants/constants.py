@@ -2,9 +2,10 @@
 # NDIGITS_BTC_PRICE_ROUNDING = 1
 
 NDIGITS_PRICES_ROUNDING = {
-    'BTC': 2,
-    'ETH': 1,
+    'BTC-PERPETUAL': 2,
+    'ETH-PERPETUAL': 1,
     'ETH_USDC': 2,
+    'ETH_BTC': 4,
 }
 
 # ------------ Order Side ------------
