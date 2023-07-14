@@ -107,6 +107,8 @@ class TradingBotOneInstrumentLimitOrders(BaseTradingBotOneInstrument):
 
         currency = await self.conn.get_currency_from_instrument(
             instrument_name=self.instr_name)
+        print('currency:', currency)
+        # return
         self.ndigits_rounding = NDIGITS_PRICES_ROUNDING[currency]
         local_grid = await self.calculate_local_grid()
 
