@@ -3,7 +3,8 @@
 
 NDIGITS_PRICES_ROUNDING = {
     'BTC': 2,
-    'ETH': 1
+    'ETH': 1,
+    'ETH_USDC': 2,
 }
 
 # ------------ Order Side ------------

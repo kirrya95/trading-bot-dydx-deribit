@@ -13,10 +13,14 @@ class TelegramNotifier:
     async def send_message(self, message, parse_mode="Markdown"):
         account_name = config['account_name']
         platform_name = config['trading_parameters']['platform']
+        mainnet = config['trading_parameters']['mainnet']
 
         message_header = f'*Account:* {account_name} \n' \
-                         f'*Platform*: {platform_name}'
+                         f'*Platform*: {platform_name} \n' \
+                         f'*Mainnet*: {mainnet} \n'
         message = f'{message_header}\n \n{message}'
+        # print(message)
+        # print('-------')
         await self.bot.send_message(chat_id=self.chat_id, text=message, parse_mode=parse_mode)
 
     async def account_info_one_instrument(self, current_deposit,
@@ -25,6 +29,10 @@ class TelegramNotifier:
                                           instr_amount,
                                           working_time):
         start_deposit = config['trading_parameters']['start_deposit']
+
+        if '_' in instr_name:
+            instr_name = instr_name.replace('_', '\\_')
+
         message = f'*Start deposit:* {start_deposit} USD \n' \
                   f'*Current amount* of {instr_name}: {instr_amount} \n' \
                   f'*Working time:* {timedelta_to_str(working_time)} \n'

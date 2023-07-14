@@ -11,7 +11,7 @@ class AbstractConnector(ABC):
         pass
 
     @abstractmethod
-    async def cancel_all_orders(self, instrument_name):
+    async def cancel_all_orders(self, instrument_name, kind):
         pass
 
     @abstractmethod

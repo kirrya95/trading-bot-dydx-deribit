@@ -22,6 +22,8 @@ class BaseTradingBotTwoInstruments(BaseTradingBot):
 
         self.instr1_name = config['trading_parameters']['instrument_1']
         self.instr2_name = config['trading_parameters']['instrument_2']
+        self.kind1 = config['trading_parameters']['kind_1']
+        self.kind2 = config['trading_parameters']['kind_2']
 
         self.order1_type = None
         self.order2_type = None
