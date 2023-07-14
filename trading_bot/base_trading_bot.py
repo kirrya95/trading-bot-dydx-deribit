@@ -80,6 +80,8 @@ class BaseTradingBot(ABC):
     async def send_strategy_info(self):
         instr1_name = config['trading_parameters']['instrument_1']
         instr2_name = config['trading_parameters']['instrument_2']
+        instr1_kind = config['trading_parameters']['kind_1']
+        instr2_kind = config['trading_parameters']['kind_2']
         updates_interval = config['telegram']['reporting_interval']
         await asyncio.sleep(await self.get_seconds_until_start())
         await asyncio.sleep(updates_interval)
@@ -102,6 +104,7 @@ class BaseTradingBot(ABC):
 
                     await self.telegram_bot.account_info_one_instrument(
                         current_deposit=current_deposit,
+                        kind_name=instr1_kind,
                         instr_name=instr1_name,
                         instr_amount=instr1_amount,
                         working_time=working_time
@@ -121,6 +124,8 @@ class BaseTradingBot(ABC):
                         current_deposit=current_deposit,
                         instr1_name=instr1_name,
                         instr2_name=instr2_name,
+                        kind1=instr1_kind,
+                        kind2=instr2_kind,
                         # instr1_initial_amount=instr1_initial_amount,
                         # instr2_initial_amount=instr2_initial_amount,
                         instr1_amount=instr1_amount,

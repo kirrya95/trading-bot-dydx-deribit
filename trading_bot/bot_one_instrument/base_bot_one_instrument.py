@@ -21,6 +21,7 @@ class BaseTradingBotOneInstrument(BaseTradingBot):
         super().__init__(conn=conn, telegram_bot=telegram_bot)
 
         self.instr_name = config['trading_parameters']['instrument_1']
+        self.kind = config['trading_parameters']['kind_1']
 
         self.initial_instr_price = None
         self.current_instr_price = None
@@ -37,6 +38,9 @@ class BaseTradingBotOneInstrument(BaseTradingBot):
     async def get_instrument_price(self):
         if self.side != 'long' and self.side != 'short':
             raise ValueError('Incorrect side. Should be either long or short')
+        
+        print(await self.conn.get_asset_price(instrument_name=self.instr_name))
+        print('HERE')
 
         if self.side == 'long':
             instr_price = (await self.conn.get_asset_price(

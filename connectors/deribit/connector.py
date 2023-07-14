@@ -48,11 +48,14 @@ class DeribitConnection(AbstractConnector):
         return "Authenticated"
 
     async def get_currency_from_instrument(self, instrument_name):
-        if 'DVOL' not in instrument_name:
-            currency = instrument_name.split('-')[0]
-        else:
+        if 'DVOL' in instrument_name:
             raise ValueError(
                 f"DVOL currently is not supported. {instrument_name}")
+        if '_' in instrument_name:
+            currency = instrument_name.split('_')[0]
+        else:
+            currency = instrument_name.split('-')[0]
+
         return currency
 
     # async def subscribe_to_order_updates(self):
@@ -100,14 +103,15 @@ class DeribitConnection(AbstractConnector):
             raise ValueError(
                 f"Failed to get order: {result['error']}")
 
-    async def get_all_orders(self, currency, instrument_name):
+    async def get_all_orders(self, currency, kind):
         get_orders_message = {
             "jsonrpc": "2.0",
             "id": 42,
             "method": "private/get_open_orders_by_currency",
             "params": {
                 "currency": currency,
-                "kind": "option" if 'option' in instrument_name else "future",
+                "kind": kind,
+                # "kind": "option" if 'option' in instrument_name else "future",
             }
         }
 
@@ -141,12 +145,12 @@ class DeribitConnection(AbstractConnector):
 
         return cancel_result
 
-    async def cancel_all_orders(self, instrument_name):
+    async def cancel_all_orders(self, instrument_name, kind):
 
         currency = await self.get_currency_from_instrument(instrument_name)
 
         orders = await self.get_all_orders(currency=currency,
-                                           instrument_name=instrument_name)
+                                           kind=kind)
 
         cancel_tasks = [self.cancel_order(
             order['order_id']) for order in orders]
@@ -156,7 +160,7 @@ class DeribitConnection(AbstractConnector):
 
         return "All limit orders cancelled"
 
-    async def get_contract_size(self, instrument_name):
+    async def get_contract_size(self, instrument_name, kind):
         message = {
             "jsonrpc": "2.0",
             "id": 42,
@@ -165,7 +169,8 @@ class DeribitConnection(AbstractConnector):
                 # валюта, которую вы хотите торговать
                 "currency": instrument_name.split("-")[0],
                 # вид инструмента, будь то опцион или фьючерс
-                "kind": "option" if 'option' in instrument_name else "future",
+                "kind": kind,
+                # "kind": "option" if 'option' in instrument_name else "future",
                 "expired": False  # фильтрация только активных инструментов
             }
         }
@@ -212,6 +217,8 @@ class DeribitConnection(AbstractConnector):
                 f"Failed to get asset price: {result['error'] if 'error' in result else 'Unknown error'}")
 
     async def create_limit_order(self, instrument_name, amount, price, action):
+        print(
+            f"Creating {action} order for {amount} {instrument_name} at {price}...")
         action = action.lower()
         if action not in ['buy', 'sell']:
             raise ValueError(
@@ -319,3 +326,15 @@ class DeribitConnection(AbstractConnector):
         else:
             raise ValueError(
                 f"Failed to get balance: {result['error'] if 'error' in result else 'Unknown error'}")
+
+
+if __name__ == "__main__":
+    async def main():
+        async with DeribitConnection() as client:
+            # await client.get_contract_size('BTC-PERPETUAL')
+            # await client.get_asset_price('BTC-PERPETUAL', 'bid')
+            # await client.create_limit_order('BTC-PERPETUAL', 1, 10000, 'buy')
+            # await client.execute_market_order('BTC-PERPETUAL', 1, 'buy')
+            # await client.get_position('BTC', 'BTC-PERPETUAL')
+            # await client.get_balance('BTC')
+            pass

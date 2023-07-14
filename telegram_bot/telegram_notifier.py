@@ -13,19 +13,29 @@ class TelegramNotifier:
     async def send_message(self, message, parse_mode="Markdown"):
         account_name = config['account_name']
         platform_name = config['trading_parameters']['platform']
+        mainnet = config['trading_parameters']['mainnet']
 
         message_header = f'*Account:* {account_name} \n' \
-                         f'*Platform*: {platform_name}'
+                         f'*Platform*: {platform_name} \n' \
+                         f'*Mainnet*: {mainnet} \n'
         message = f'{message_header}\n \n{message}'
+        # print(message)
+        # print('-------')
         await self.bot.send_message(chat_id=self.chat_id, text=message, parse_mode=parse_mode)
 
     async def account_info_one_instrument(self, current_deposit,
                                           instr_name,
                                           # instr_initial_amount,
+                                          kind_name,
                                           instr_amount,
                                           working_time):
         start_deposit = config['trading_parameters']['start_deposit']
+
+        if '_' in instr_name:
+            instr_name = instr_name.replace('_', '\\_')
+
         message = f'*Start deposit:* {start_deposit} USD \n' \
+                  f'*Kind of instrument:* {kind_name} \n' \
                   f'*Current amount* of {instr_name}: {instr_amount} \n' \
                   f'*Working time:* {timedelta_to_str(working_time)} \n'
         #   f'*Current deposit:* {current_deposit} USD (PnL: {round((current_deposit/start_deposit - 1) * 100, 8)} %)\n' \
@@ -34,6 +44,7 @@ class TelegramNotifier:
 
     async def account_info_two_instruments(self, current_deposit,
                                            instr1_name, instr2_name,
+                                           kind1_name, kind2_name,
                                            instr1_amount, instr2_amount,
                                            working_time):
 
@@ -41,6 +52,7 @@ class TelegramNotifier:
 
         message = f'*Start deposit:* {start_deposit} USD \n' \
             f'*Current deposit:* {current_deposit} USD (PnL: {round((current_deposit/start_deposit - 1) * 100, 8)} %)\n' \
+            f'*Kind of instrument 1:* {kind1_name}, *instrument 2:* {kind2_name} \n' \
             f'*Current amount* of {instr1_name}: {instr1_amount} \n' \
             f'*Current amount* of {instr2_name}: {instr2_amount} \n' \
             f'*Working time:* {timedelta_to_str(working_time)} \n'
