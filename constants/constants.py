@@ -1,11 +1,19 @@
 # NDIGITS_ETH_PRICE_ROUNDING = 2
 # NDIGITS_BTC_PRICE_ROUNDING = 1
 
+# ------------ Instruments ------------
+BTC_PERPETUAL = 'BTC-PERPETUAL'
+ETH_PERPETUAL = 'ETH-PERPETUAL'
+ETH_USDC = 'ETH_USDC'
+BTC_USDC = 'BTC_USDC'
+ETH_BTC = 'ETH_BTC'
+
+
 NDIGITS_PRICES_ROUNDING = {
-    'BTC-PERPETUAL': 2,
-    'ETH-PERPETUAL': 1,
-    'ETH_USDC': 2,
-    'ETH_BTC': 4,
+    BTC_PERPETUAL: 2,
+    ETH_PERPETUAL: 1,
+    ETH_USDC: 2,
+    ETH_BTC: 4,
 }
 
 # ------------ Order Side ------------

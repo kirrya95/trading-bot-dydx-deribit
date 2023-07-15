@@ -94,12 +94,8 @@ class TradingBotOneInstrumentLimitOrders(BaseTradingBotOneInstrument):
 
         await self.conn.cancel_all_orders(instrument_name=self.instr_name, kind=self.kind)
 
-        # amount_usdc_to_have = 0  # we don't have to have any amount of asset at the start
-        # tidy asset amount
-        # await self.tidy_instrument_amount(instrument_name=self.instr_name, amount_in_usdc_to_have=amount_usdc_to_have)
         self.initial_instr_price = await self.get_instrument_price()
-        # self.initial_amount = await self.get_asset_amount_usdc(instrument_name=self.instr_name)
-        # self.initial_usdc_deposit_on_wallet = (await self.conn.get_balance(currency="USDC"))['data'][0]['amount']
+
         self.initial_usdc_deposit_on_wallet = 0
 
         # order_info = await self.conn.get_order(order_id='ETH-4216344391')
@@ -117,7 +113,9 @@ class TradingBotOneInstrumentLimitOrders(BaseTradingBotOneInstrument):
 
         print(self.instr_name)
         print('grid:', local_grid)
-        # return
+
+        self.current_instr_price = self.initial_instr_price
+        self.size = await self.get_size_to_trade(side=self.side)
 
         for grid_level in local_grid:
             grid_level = round(grid_level, ndigits=self.ndigits_rounding)
@@ -126,11 +124,13 @@ class TradingBotOneInstrumentLimitOrders(BaseTradingBotOneInstrument):
                 if grid_level >= self.initial_instr_price:
                     continue
                 print(self.size)
+                # print(grid_level)
                 order = await self.conn.create_limit_order(instrument_name=self.instr_name,
                                                            amount=self.size,
                                                            price=grid_level,
                                                            action=ORDER_SIDE_BUY)
                 self.active_limit_orders[order['order_id']] = order
+                # print(order)
             elif self.side == 'short':
                 if grid_level <= self.initial_instr_price:
                     continue
@@ -145,6 +145,7 @@ class TradingBotOneInstrumentLimitOrders(BaseTradingBotOneInstrument):
         while True:
             async with self.lock:
                 self.current_instr_price = await self.get_instrument_price()
+                self.size = await self.get_size_to_trade(side=self.side)
                 self.current_amount = await self.get_asset_amount_usdc(instrument_name=self.instr_name)
 
                 print('instrument price:', self.current_instr_price)

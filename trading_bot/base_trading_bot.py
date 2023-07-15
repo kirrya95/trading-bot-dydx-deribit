@@ -14,7 +14,7 @@ config = load_config('config.yaml')
 
 class BaseTradingBot(ABC):
     def __init__(self,
-                 conn: AbstractConnector,
+                 conn,
                  telegram_bot: TelegramNotifier):
 
         self.lock = asyncio.Lock()

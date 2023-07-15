@@ -22,6 +22,7 @@ class TradingBotOneInstrumentMarketOrders(BaseTradingBotOneInstrument):
                  telegram_bot: TelegramNotifier):
         super().__init__(conn=conn, telegram_bot=telegram_bot)
         self.order_type = 'market'
+        self.active_asset_prices = []
 
     async def check_for_grid_level_take_profit(self, tp_price: float):
         if self.side == 'long' and self.current_instr_price >= tp_price:
