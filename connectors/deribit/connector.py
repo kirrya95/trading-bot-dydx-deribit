@@ -294,7 +294,7 @@ class DeribitConnection(AbstractConnector):
                         f"Position size for {instrument_name}: {position['size']}")
                     return float(position['size'])
 
-            print(f"No open position found for {instrument_name}")
+            # print(f"No open position found for {instrument_name}")
             return 0.0
         else:
             raise ValueError(
