@@ -1,17 +1,9 @@
 from dataclasses import dataclass
-
-
-def add_get_attributes(cls):
-    def get_attributes():
-        return {k: v for k, v in cls.__dict__.items() if not k.startswith('__') and not callable(v)}
-
-    cls.get_attributes = get_attributes
-    return cls
-
+from utils import add_get_attributes
 
 @dataclass
 @add_get_attributes
-class DeribitPerpetualMarkets():
+class DeribitPerpetualMarkets:
     BTC_PERPETUAL = 'BTC-PERPETUAL'
     BTC_USDC_PERPETUAL = 'BTC_USDC-PERPETUAL'
 
@@ -21,7 +13,7 @@ class DeribitPerpetualMarkets():
 
 @dataclass
 @add_get_attributes
-class DeribitSpotMarkets():
+class DeribitSpotMarkets:
     BTC_USDC = 'BTC_USDC'
     ETH_USDC = 'ETH_USDC'
     ETH_BTC = 'ETH_BTC'

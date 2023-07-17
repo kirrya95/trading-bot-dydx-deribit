@@ -1,4 +1,5 @@
-from abc import ABC, abstractmethod
+# from abc import ABC, abstractmethod
+from trading_bot.base_grid_controller import BaseGridController
 from copy import deepcopy
 
 from utils import load_config, to_utc_timestamp
@@ -7,14 +8,9 @@ from constants import *
 config = load_config('config.yaml')
 
 
-class GridController(ABC):
+class GridController(BaseGridController):
     def __init__(self, ndigits_rounding: int):
-        self.grid_step = config['trading_parameters']['grid_step']
-        self.grid_ndigits_rounding = ndigits_rounding
-        self.instr_price = None
-        self.grid_size = None
-        self.direction = None
-        self.current_grid = None
+        super().__init__(ndigits_rounding=ndigits_rounding)
 
         self.active_limit_orders = {}
         self.take_profit_orders = {}
@@ -54,43 +50,21 @@ class GridController(ABC):
         self.grid_size += delta
         await self.initialize_grid(
             instr_price=self.instr_price, grid_size=self.grid_size, grid_direction=self.direction)
-        # if delta > 0:
-        #     for i in range(delta):
-        #         if self.direction == GRID_DIRECTION_LONG:
-        #             self.grid.append(self.grid[-1] + self.grid_step)
-        #         elif self.direction == GRID_DIRECTION_SHORT:
-        #             self.grid.append(self.grid[-1] - self.grid_step)
-        # elif delta < 0:
-        #     for _ in range(abs(delta)):
-        #         self.grid.pop()
 
     async def remove_limit_order(self, order_id: str):
-        # try:
         take_profit_order_id = self.limit_to_take_profit_orders.get(
             order_id)
         self.take_profit_to_limit_orders.pop(take_profit_order_id)
         self.take_profit_orders.pop(take_profit_order_id)
-        # except KeyError:
-        #     pass
+
         self.limit_to_take_profit_orders.pop(order_id)
         self.active_limit_orders.pop(order_id)
 
     async def remove_take_profit_order(self, order_id: str):
-        # try:
-        #     limit_order_id = self.take_profit_to_limit_orders.get(order_id)
-        #     self.limit_to_take_profit_orders.pop(limit_order_id)
-        # except KeyError:
-        #     pass
         self.take_profit_to_limit_orders.pop(order_id)
         self.take_profit_orders.pop(order_id)
 
     ### GETTERS ###
-
-    async def get_grid(self):
-        return self.current_grid
-
-    async def get_grid_size(self):
-        return self.grid_size
 
     async def get_active_limit_orders_ids(self):
         return deepcopy(list(self.active_limit_orders.keys()))

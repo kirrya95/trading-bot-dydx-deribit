@@ -5,7 +5,9 @@ import asyncio
 from telegram_bot import TelegramNotifier
 from connectors import dYdXConnection, DeribitConnection
 from utils import load_config, to_utc_timestamp
+from utils.error_checkers import check_grid_direction
 from constants import *
+
 
 from trading_bot.base_trading_bot import BaseTradingBot
 
@@ -60,31 +62,29 @@ class BaseTradingBotTwoInstruments(BaseTradingBot):
             raise ValueError(f"Invalid spread operator: {spread_operator}")
         return spread_price
 
-    async def get_instruments_prices(self):
-        if self.side != 'long' and self.side != 'short':
-            raise ValueError('Incorrect side. Should be either long or short')
+    # async def get_instruments_prices(self, grid_direction: str):
 
-        if self.grid_direction == 'long':
-            instr1_price = (await self.conn.get_asset_price(
-                instrument_name=self.instr1_name))['best_ask']
-            instr2_price = (await self.conn.get_asset_price(
-                instrument_name=self.instr2_name))['best_bid']
-        elif self.grid_direction == 'short':
-            instr1_price = (await self.conn.get_asset_price(
-                instrument_name=self.instr1_name))['best_bid']
-            instr2_price = (await self.conn.get_asset_price(
-                instrument_name=self.instr2_name))['best_ask']
+    #     if self.grid_direction == GRID_DIRECTION_LONG:
+    #         instr1_price = (await self.conn.get_asset_price(
+    #             instrument_name=self.instr1_name))['best_ask']
+    #         instr2_price = (await self.conn.get_asset_price(
+    #             instrument_name=self.instr2_name))['best_bid']
+    #     elif self.grid_direction == GRID_DIRECTION_SHORT:
+    #         instr1_price = (await self.conn.get_asset_price(
+    #             instrument_name=self.instr1_name))['best_bid']
+    #         instr2_price = (await self.conn.get_asset_price(
+    #             instrument_name=self.instr2_name))['best_ask']
 
-        spread_price = await self.get_spread_price(
-            instr1_price=instr1_price,
-            instr2_price=instr2_price
-        )
-        return instr1_price, instr2_price, spread_price
+    #     spread_price = await self.get_spread_price(
+    #         instr1_price=instr1_price,
+    #         instr2_price=instr2_price
+    #     )
+    #     return instr1_price, instr2_price, spread_price
 
-    async def get_amounts(self):
-        amount1 = await self.get_asset_amount_usdc(instrument_name=self.instr1_name)
-        amount2 = await self.get_asset_amount_usdc(instrument_name=self.instr2_name)
-        return amount1, amount2
+    # async def get_amounts(self):
+    #     amount1 = await self.get_asset_amount_usdc(instrument_name=self.instr1_name)
+    #     amount2 = await self.get_asset_amount_usdc(instrument_name=self.instr2_name)
+    #     return amount1, amount2
 
     async def calculate_local_grid(self):
         if self.initial_spread_price is None:
