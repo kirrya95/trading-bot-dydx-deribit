@@ -29,11 +29,6 @@ class GridController(BaseGridController):
         self.take_profit_to_limit_orders[take_profit_order_id
                                          ] = limit_order_id
 
-    async def change_grid_size(self, delta: int):
-        self.grid_size += delta
-        await self.initialize_grid(
-            instr_price=self.instr_price, grid_size=self.grid_size, grid_direction=self.direction)
-
     async def remove_limit_order(self, order_id: str):
         take_profit_order_id = self.limit_to_take_profit_orders.get(
             order_id)
