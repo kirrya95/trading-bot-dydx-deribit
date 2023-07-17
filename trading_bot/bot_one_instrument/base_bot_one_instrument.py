@@ -38,18 +38,18 @@ class BaseTradingBotOneInstrument(BaseTradingBot):
         # self.active_positions = []
         # self.take_profit_asset_prices = []
 
-    async def get_instrument_price(self):
-        if self.grid_direction not in [GRID_DIRECTION_LONG, GRID_DIRECTION_SHORT]:
+    async def get_instrument_price(self, side: tp.Union[ORDER_SIDE_BUY, ORDER_SIDE_SELL]) -> float:
+        if side not in [ORDER_SIDE_BUY, ORDER_SIDE_SELL]:
             raise ValueError(
-                f'Incorrect grid_direction. Should be either {GRID_DIRECTION_LONG} or {GRID_DIRECTION_SHORT}')
+                f'Incorrect side. Should be either {ORDER_SIDE_BUY} or {ORDER_SIDE_SELL}')
 
         print(await self.conn.get_asset_price(instrument_name=self.instr_name))
         # print('HERE')
 
-        if self.grid_direction == GRID_DIRECTION_LONG:
+        if side == ORDER_SIDE_BUY:
             instr_price = (await self.conn.get_asset_price(
                 instrument_name=self.instr_name))['best_ask']
-        elif self.grid_direction == GRID_DIRECTION_SHORT:
+        elif side == ORDER_SIDE_SELL:
             instr_price = (await self.conn.get_asset_price(
                 instrument_name=self.instr_name))['best_bid']
 

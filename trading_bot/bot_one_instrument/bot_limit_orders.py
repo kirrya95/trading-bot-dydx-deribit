@@ -42,14 +42,14 @@ class TradingBotOneInstrumentLimitOrders(BaseTradingBotOneInstrument):
                                                                    amount=take_profit_size,
                                                                    price=take_profit_price,
                                                                    action=self.take_profit_side)
-            await self.grid_controller.update_active_order_info(
-                order_id=limit_order_id, order_info=limit_order_info)
+            await self.grid_controller.update_take_profit_order_info(
+                order_id=take_profit_order['order_id'], order_info=take_profit_order)
 
             await self.grid_controller.link_take_profit_order(
-                take_profit_orde_id=take_profit_order['order_id'], limit_order_id=limit_order_info['order_id'])
+                take_profit_order_id=take_profit_order['order_id'], limit_order_id=limit_order_info['order_id'])
 
             if self.grid_controller.grid_size < self.max_orders_amount:
-                await self.grid_controller.change_grid_size(self.grid_controller.grid_size - self.max_orders_amount)
+                await self.grid_controller.change_grid_size(delta=+1)
                 new_limit_order_price = self.grid_controller.current_grid[-1]
                 new_limit_order = await self.conn.create_limit_order(instrument_name=self.instr_name,
                                                                      amount=take_profit_size,
@@ -58,10 +58,16 @@ class TradingBotOneInstrumentLimitOrders(BaseTradingBotOneInstrument):
                 await self.grid_controller.update_active_order_info(
                     order_id=new_limit_order['order_id'], order_info=new_limit_order)
 
-            await self.telegram_bot.send_message(
-                f'Limit order at the price {limit_order_info["price"]} was filled.'
-                f'Take profit order with the price {take_profit_order["price"]} was created.'
-                f'New limit order with the price {new_limit_order["price"]} was created.')
+                await self.telegram_bot.send_message(
+                    f'Limit order at the price {limit_order_info["price"]} was filled. \n'
+                    f'Take profit order with the price {take_profit_order["price"]} was created. \n'
+                    f'New limit order with the price {new_limit_order["price"]} was created.')
+            else:
+                await self.telegram_bot.send_message(
+                    f'Limit order at the price {limit_order_info["price"]} was filled. \n'
+                    f'Take profit order with the price {take_profit_order["price"]} was created. \n'
+                    f'No new limit order was created because the maximum number of orders was reached.')
+
             return True
         else:
             return False
@@ -75,7 +81,6 @@ class TradingBotOneInstrumentLimitOrders(BaseTradingBotOneInstrument):
             limit_order_info = await self.grid_controller.get_active_limit_order_info(order_id=limit_order_id)
 
             await self.grid_controller.remove_limit_order(order_id=limit_order_id)
-            await self.grid_controller.remove_take_profit_order(order_id=take_profit_order_id)
 
             size = await self.get_size_to_trade(side=self.limit_order_side)
 
@@ -84,7 +89,7 @@ class TradingBotOneInstrumentLimitOrders(BaseTradingBotOneInstrument):
                                                                  amount=size,
                                                                  price=limit_order_info['price'],
                                                                  action=limit_order_info['direction'])
-            self.grid_controller.update_active_order_info(
+            await self.grid_controller.update_active_order_info(
                 order_id=new_limit_order['order_id'], order_info=new_limit_order)
 
             await self.telegram_bot.send_message(
@@ -101,17 +106,19 @@ class TradingBotOneInstrumentLimitOrders(BaseTradingBotOneInstrument):
                                                        amount=size,
                                                        price=grid_level,
                                                        action=self.limit_order_side)
-            self.grid_controller.update_active_order_info(
+            print(order)
+            await self.grid_controller.update_active_order_info(
                 order_id=order['order_id'], order_info=order)
 
-        await self.telegram_bot.send_message('Grid orders were created.')
+        await self.telegram_bot.send_message('Grid orders are created.')
 
     async def run(self):
         # sleep until start
         await asyncio.sleep(await self.get_seconds_until_start())
 
         await self.conn.cancel_all_orders(instrument_name=self.instr_name, kind=self.kind)
-        self.initial_instr_price = await self.get_instrument_price()
+        # take profit side is opposite to limit order side
+        self.initial_instr_price = await self.get_instrument_price(side=self.take_profit_side)
         # important for some reasons
         self.current_instr_price = self.initial_instr_price
 
@@ -123,14 +130,14 @@ class TradingBotOneInstrumentLimitOrders(BaseTradingBotOneInstrument):
 
         while True:
             async with self.lock:
-                self.current_instr_price = await self.get_instrument_price()
-                print('instrument price:', self.current_instr_price)
+                self.current_instr_price = await self.get_instrument_price(side=self.take_profit_side)
                 print('current grid:', self.grid_controller.current_grid)
 
                 active_limit_orders_ids = await self.grid_controller.get_active_limit_orders_ids()
+                print(active_limit_orders_ids)
                 for active_limit_order_id in active_limit_orders_ids:
                     if active_limit_order_id not in await self.grid_controller.get_linked_limit_orders_ids():
-                        await self.check_limit_order_fullfilled(active_limit_order_id=active_limit_order_id)
+                        await self.check_limit_order_fullfilled(limit_order_id=active_limit_order_id)
 
                 take_profit_orders_ids = await self.grid_controller.get_linked_take_profit_orders_ids()
                 for take_profit_order_id in take_profit_orders_ids:
