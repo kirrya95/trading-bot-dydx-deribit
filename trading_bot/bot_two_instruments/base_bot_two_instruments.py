@@ -38,10 +38,10 @@ class BaseTradingBotTwoInstruments(BaseTradingBot):
         self.current_instr2_price = None
         self.current_spread_price = None
 
-        self.initial_amount1 = None
-        self.initial_amount2 = None
-        self.current_amount1 = None
-        self.current_amount2 = None
+        # self.initial_amount1 = None
+        # self.initial_amount2 = None
+        # self.current_amount1 = None
+        # self.current_amount2 = None
 
         self.active_spreads = []
         # self.active_positions = []
@@ -86,12 +86,12 @@ class BaseTradingBotTwoInstruments(BaseTradingBot):
     #     amount2 = await self.get_asset_amount_usdc(instrument_name=self.instr2_name)
     #     return amount1, amount2
 
-    async def calculate_local_grid(self):
-        if self.initial_spread_price is None:
-            raise ValueError('Initial spread price is not set')
-        local_grid_lows = [self.initial_spread_price - self.grid_step *
-                           i for i in range(1, self.orders_in_market+1)]
-        local_grid_highs = [self.initial_spread_price + self.grid_step * i
-                            for i in range(1, self.orders_in_market+1)]
-        local_grid = local_grid_lows + local_grid_highs
-        return local_grid
+    # async def calculate_local_grid(self):
+    #     if self.initial_spread_price is None:
+    #         raise ValueError('Initial spread price is not set')
+    #     local_grid_lows = [self.initial_spread_price - self.grid_step *
+    #                        i for i in range(1, self.orders_in_market+1)]
+    #     local_grid_highs = [self.initial_spread_price + self.grid_step * i
+    #                         for i in range(1, self.orders_in_market+1)]
+    #     local_grid = local_grid_lows + local_grid_highs
+    #     return local_grid

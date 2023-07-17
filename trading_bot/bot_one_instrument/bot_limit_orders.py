@@ -12,7 +12,7 @@ from constants import *
 
 from trading_bot.bot_one_instrument import BaseTradingBotOneInstrument
 
-from .grid_controller import GridController
+from .grid_controller_one_intrument import GridController
 
 
 config = load_config('config.yaml')
