@@ -1,4 +1,3 @@
-# from abc import ABC, abstractmethod
 from trading_bot.base_grid_controller import BaseGridController
 from copy import deepcopy
 
@@ -17,22 +16,6 @@ class GridController(BaseGridController):
         self.limit_to_take_profit_orders = {}  # limit -> take profit
         self.take_profit_to_limit_orders = {}  # take profit -> limit
 
-    async def initialize_grid(self, instr_price: float, grid_size: int, grid_direction: str):
-        if grid_direction not in [GRID_DIRECTION_LONG, GRID_DIRECTION_SHORT]:
-            raise ValueError(
-                f'Incorrect side. Should be either {GRID_DIRECTION_LONG} or {GRID_DIRECTION_SHORT}')
-
-        self.grid_step = config['trading_parameters']['grid_step']
-        self.instr_price = instr_price
-        self.grid_size = grid_size
-        self.direction = grid_direction
-        self.current_grid = None
-        if grid_direction == GRID_DIRECTION_LONG:
-            self.current_grid = [round(instr_price - self.grid_step * i, ndigits=self.grid_ndigits_rounding)
-                                 for i in range(1, grid_size + 1)]
-        elif grid_direction == GRID_DIRECTION_SHORT:
-            self.current_grid = [round(instr_price + self.grid_step * i, ndigits=self.grid_ndigits_rounding)
-                                 for i in range(1, grid_size + 1)]
 
     async def update_active_order_info(self, order_id: str, order_info: dict):
         self.active_limit_orders[order_id] = order_info

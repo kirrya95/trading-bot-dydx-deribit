@@ -61,14 +61,14 @@ class BaseTradingBot(ABC):
             res = await self.conn.execute_market_order(
                 instrument_name=instrument_name,
                 amount=amount_in_usdc_to_have - instrument_amount_usdc,
-                side=ORDER_SIDE_BUY
+                side=OrderSides.ORDER_SIDE_BUY
             )
             return res
         elif instrument_amount_usdc > amount_in_usdc_to_have:
             res = await self.conn.execute_market_order(
                 instrument_name=instrument_name,
                 amount=instrument_amount_usdc - amount_in_usdc_to_have,
-                side=ORDER_SIDE_SELL
+                side=OrderSides.ORDER_SIDE_SELL
             )
             return res
 

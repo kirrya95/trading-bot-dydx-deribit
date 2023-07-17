@@ -36,7 +36,7 @@ class TradingBotOneInstrumentLimitOrders(BaseTradingBotOneInstrument):
         if limit_order_info['order_state'] == 'filled':
             take_profit_size = await self.get_size_to_trade(side=self.take_profit_side)
             take_profit_price = limit_order_info['price'] + \
-                self.take_profit_step if self.limit_order_side == ORDER_SIDE_BUY else limit_order_info[
+                self.take_profit_step if self.limit_order_side == OrderSides.ORDER_SIDE_BUY else limit_order_info[
                     'price'] - self.take_profit_step
             take_profit_order = await self.conn.create_limit_order(instrument_name=self.instr_name,
                                                                    amount=take_profit_size,

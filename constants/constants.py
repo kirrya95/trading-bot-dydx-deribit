@@ -22,6 +22,8 @@ class OrderSides:
 
 # ------------ Grid Direction ------------
 
-
-GRID_DIRECTION_LONG = 'long'
-GRID_DIRECTION_SHORT = 'short'
+@dataclass
+@add_get_attributes
+class GridDirections:
+    GRID_DIRECTION_LONG = 'long'
+    GRID_DIRECTION_SHORT = 'short'
