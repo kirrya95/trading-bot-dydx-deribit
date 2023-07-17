@@ -64,16 +64,16 @@ class BaseTradingBotTwoInstruments(BaseTradingBot):
         if self.side != 'long' and self.side != 'short':
             raise ValueError('Incorrect side. Should be either long or short')
 
-        if self.side == 'long':
+        if self.grid_direction == 'long':
             instr1_price = (await self.conn.get_asset_price(
-                instrument_name=self.instr1_name))[1]
+                instrument_name=self.instr1_name))['best_ask']
             instr2_price = (await self.conn.get_asset_price(
-                instrument_name=self.instr2_name))[0]
-        elif self.side == 'short':
+                instrument_name=self.instr2_name))['best_bid']
+        elif self.grid_direction == 'short':
             instr1_price = (await self.conn.get_asset_price(
-                instrument_name=self.instr1_name))[0]
+                instrument_name=self.instr1_name))['best_bid']
             instr2_price = (await self.conn.get_asset_price(
-                instrument_name=self.instr2_name))[1]
+                instrument_name=self.instr2_name))['best_ask']
 
         spread_price = await self.get_spread_price(
             instr1_price=instr1_price,

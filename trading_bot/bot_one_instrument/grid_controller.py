@@ -38,11 +38,6 @@ class GridController(ABC):
             self.current_grid = [round(instr_price + self.grid_step * i, ndigits=self.grid_ndigits_rounding)
                                  for i in range(1, grid_size + 1)]
 
-    # async def fill_grid_with_orders(self):
-    #     for i in range(self.grid_size):
-    #         await self.create_limit_order(
-    #             price=self.current_grid[i], amount=self.amount)
-
     async def update_active_order_info(self, order_id: str, order_info: dict):
         self.active_limit_orders[order_id] = order_info
 
