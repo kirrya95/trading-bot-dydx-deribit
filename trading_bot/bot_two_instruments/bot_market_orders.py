@@ -82,7 +82,8 @@ class TradingBotTwoInstrumentsMarketOrders(BaseTradingBotTwoInstruments):
         while True:
             async with self.lock:
                 self.current_instr1_price, self.current_instr2_price, self.current_spread_price = await self.get_instruments_prices()
-                self.current_amount1, self.current_amount2 = await self.get_amounts()
+                # self.current_amount1, self.current_amount2 = await self.get_amounts()
+                self.current_amount1, self.current_amount2 = 0, 0  # TODO: fix this
 
                 local_grid = await self.calculate_local_grid()
                 print('spread price:', self.current_spread_price)

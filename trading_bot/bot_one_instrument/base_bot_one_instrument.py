@@ -23,6 +23,9 @@ class BaseTradingBotOneInstrument(BaseTradingBot):
         self.instr_name = config['trading_parameters']['instrument_1']
         self.kind = config['trading_parameters']['kind_1']
 
+        self.limit_order_side = ORDER_SIDE_BUY if self.grid_direction == GRID_DIRECTION_LONG else ORDER_SIDE_SELL
+        self.take_profit_side = ORDER_SIDE_SELL if self.grid_direction == GRID_DIRECTION_LONG else ORDER_SIDE_BUY
+
         self.initial_instr_price = None
         self.current_instr_price = None
         self.initial_amount = None
@@ -32,55 +35,59 @@ class BaseTradingBotOneInstrument(BaseTradingBot):
         self.current_usdc_balance = None
 
         # self.active_asset_prices = []
-        self.active_positions = []
-        self.take_profit_asset_prices = []
+        # self.active_positions = []
+        # self.take_profit_asset_prices = []
 
     async def get_instrument_price(self):
-        if self.side != 'long' and self.side != 'short':
-            raise ValueError('Incorrect side. Should be either long or short')
+        if self.grid_direction not in [GRID_DIRECTION_LONG, GRID_DIRECTION_SHORT]:
+            raise ValueError(
+                f'Incorrect grid_direction. Should be either {GRID_DIRECTION_LONG} or {GRID_DIRECTION_SHORT}')
 
         print(await self.conn.get_asset_price(instrument_name=self.instr_name))
-        print('HERE')
+        # print('HERE')
 
-        if self.side == 'long':
+        if self.grid_direction == GRID_DIRECTION_LONG:
             instr_price = (await self.conn.get_asset_price(
-                instrument_name=self.instr_name))[1]
-        elif self.side == 'short':
+                instrument_name=self.instr_name))['best_ask']
+        elif self.grid_direction == GRID_DIRECTION_SHORT:
             instr_price = (await self.conn.get_asset_price(
-                instrument_name=self.instr_name))[0]
+                instrument_name=self.instr_name))['best_bid']
 
         return instr_price
 
-    async def calculate_local_grid(self, grid_size: int = None):
-        if grid_size is None:
-            grid_size = self.orders_in_market
-        if self.initial_instr_price is None:
-            raise ValueError('Initial instrument price is not set')
-        local_grid_lows = [self.initial_instr_price - self.grid_step *
-                           i for i in range(1, grid_size+1)]
-        local_grid_highs = [self.initial_instr_price + self.grid_step * i
-                            for i in range(1, grid_size+1)]
-        local_grid = local_grid_lows + local_grid_highs
+    # async def calculate_local_grid(self, grid_size: int = None):
+    #     if grid_size is None:
+    #         grid_size = self.orders_in_market
+    #     if self.initial_instr_price is None:
+    #         raise ValueError('Initial instrument price is not set')
+    #     local_grid_lows = [self.initial_instr_price - self.grid_step *
+    #                        i for i in range(1, grid_size+1)]
+    #     local_grid_highs = [self.initial_instr_price + self.grid_step * i
+    #                         for i in range(1, grid_size+1)]
+    #     local_grid = local_grid_lows + local_grid_highs
 
-        return local_grid
+    #     return local_grid
 
-    async def get_size_to_trade(self, side=None):
-        # size = config['trading_parameters']['order_size']
-        if side != 'long' and side != 'short':
+    async def get_size_to_trade(self, side):
+        # if direction not in [GRID_DIRECTION_LONG, GRID_DIRECTION_SHORT]:
+        #     raise ValueError(
+        #         f'Incorrect direction. Should be either {GRID_DIRECTION_LONG} or {GRID_DIRECTION_SHORT}')
+
+        if side not in [ORDER_SIDE_BUY, ORDER_SIDE_SELL]:
             raise ValueError(
-                'Incorrect side. Should be either long or short')
+                f'Incorrect side. Should be either {ORDER_SIDE_BUY} or {ORDER_SIDE_SELL}')
 
         if self.kind == 'future':
             size = config['trading_parameters']['order_size']
         elif self.kind == 'spot':
             if self.instr_name == ETH_BTC:
-                if side == 'long':
-                    price = (await self.conn.get_asset_price('ETH_USDC'))[0]
+                if side == ORDER_SIDE_BUY:
+                    price = (await self.conn.get_asset_price('ETH_USDC'))['best_ask']
                     print(f'Price: {price}')
                     size = config['trading_parameters']['order_size'] / price
                     return round(size, ndigits=NDIGITS_PRICES_ROUNDING['ETH_USDC'])
-                elif side == 'short':
-                    price = (await self.conn.get_asset_price('BTC_USDC'))[0]
+                elif side == ORDER_SIDE_SELL:
+                    price = (await self.conn.get_asset_price('BTC_USDC'))['best_bid']
                     print(f'Price: {price}')
                     size = config['trading_parameters']['order_size'] / price
                     return round(size, ndigits=NDIGITS_PRICES_ROUNDING['BTC_USDC'])

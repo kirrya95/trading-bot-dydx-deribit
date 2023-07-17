@@ -42,7 +42,7 @@ class BaseTradingBotTwoInstruments(BaseTradingBot):
         self.current_amount2 = None
 
         self.active_spreads = []
-        self.active_positions = []
+        # self.active_positions = []
         self.take_profit_spreads = []
 
     async def get_spread_price(self, instr1_price: float, instr2_price: float) -> float:

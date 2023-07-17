@@ -20,3 +20,8 @@ NDIGITS_PRICES_ROUNDING = {
 # ------------ Order Side ------------
 ORDER_SIDE_BUY = 'BUY'
 ORDER_SIDE_SELL = 'SELL'
+
+# ------------ Grid Direction ------------
+
+GRID_DIRECTION_LONG = 'long'
+GRID_DIRECTION_SHORT = 'short'

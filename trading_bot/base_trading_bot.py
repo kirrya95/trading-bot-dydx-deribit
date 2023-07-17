@@ -25,7 +25,7 @@ class BaseTradingBot(ABC):
         self.size = config['trading_parameters']['order_size']
         self.grid_step = config['trading_parameters']['grid_step']
         self.take_profit_step = config['trading_parameters']['take_profit_spread_delta']
-        self.side = config['trading_parameters']['grid_direction']
+        self.grid_direction = config['trading_parameters']['grid_direction']
         self.start_timestamp = to_utc_timestamp(
             config['trading_parameters']['start_datetime'])
         self.orders_in_market = config['trading_parameters']['orders_in_market']
@@ -71,11 +71,11 @@ class BaseTradingBot(ABC):
             )
             return res
 
-    async def get_asset_amount_usdc(self, instrument_name: str):
-        currency = await self.conn.get_currency_from_instrument(
-            instrument_name=instrument_name)
-        amount = await self.conn.get_position(currency=currency, instrument_name=instrument_name)
-        return amount
+    # async def get_asset_amount_usdc(self, instrument_name: str):
+    #     currency = await self.conn.get_currency_from_instrument(
+    #         instrument_name=instrument_name)
+    #     amount = await self.conn.get_position(currency=currency, instrument_name=instrument_name)
+    #     return amount
 
     async def send_strategy_info(self):
         instr1_name = config['trading_parameters']['instrument_1']

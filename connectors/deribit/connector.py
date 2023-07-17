@@ -211,7 +211,8 @@ class DeribitConnection(AbstractConnector):
 
         if 'result' in result and 'best_bid_price' in result['result'] and 'best_ask_price' in result['result']:
             # return result['result']['best_bid_price'] if action == 'bid' else result['result']['best_ask_price']
-            return (result['result']['best_bid_price'], result['result']['best_ask_price'])
+            return {'best_bid': result['result']['best_bid_price'], 
+                    'best_ask': result['result']['best_ask_price']}
         else:
             raise ValueError(
                 f"Failed to get asset price: {result['error'] if 'error' in result else 'Unknown error'}")
