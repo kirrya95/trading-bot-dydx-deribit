@@ -18,10 +18,6 @@ class BaseGridController:
 
     @check_grid_direction
     async def initialize_grid(self, instr_price: float, grid_size: int, grid_direction: str):
-        if grid_direction not in [GridDirections.GRID_DIRECTION_LONG, GridDirections.GRID_DIRECTION_SHORT]:
-            raise ValueError(
-                f'Incorrect side. Should be either {GridDirections.GRID_DIRECTION_LONG} or {GridDirections.GRID_DIRECTION_SHORT}')
-
         self.grid_step = config['trading_parameters']['grid_step']
         self.instr_price = instr_price
         self.grid_size = grid_size

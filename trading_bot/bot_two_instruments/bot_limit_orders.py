@@ -14,4 +14,10 @@ config = load_config('config.yaml')
 
 
 class TradingBotTwoInstrumentsLimitOrders(BaseTradingBot):
-    pass
+    def __init__(self,
+                 conn: tp.Union[DeribitConnection,
+                                dYdXConnection],
+                 telegram_bot: TelegramNotifier):
+        super().__init__(conn=conn, telegram_bot=telegram_bot)
+
+    

@@ -1,17 +1,14 @@
 import typing as tp
 import time
 import asyncio
-from copy import deepcopy
 
 from telegram_bot import TelegramNotifier
 from connectors import dYdXConnection, DeribitConnection
 from utils import load_config, to_utc_timestamp
 from constants import *
 
-# from trading_bot.base_bot import BaseTradingBot
 
-from trading_bot.bot_one_instrument import BaseTradingBotOneInstrument
-
+from .base_bot_one_instrument import BaseTradingBotOneInstrument
 from .grid_controller_one_intrument import GridController
 
 
@@ -122,6 +119,7 @@ class TradingBotOneInstrumentLimitOrders(BaseTradingBotOneInstrument):
         # important for some reasons
         self.current_instr_price = self.initial_instr_price
 
+        print(self.grid_direction)
         await self.grid_controller.initialize_grid(instr_price=self.initial_instr_price,
                                                    grid_size=self.orders_in_market,
                                                    grid_direction=self.grid_direction)
