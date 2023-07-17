@@ -52,7 +52,7 @@ class GridController(ABC):
         self.take_profit_to_limit_orders[take_profit_order_id
                                          ] = limit_order_id
 
-    async def update_grid_size(self, delta: int):
+    async def change_grid_size(self, delta: int):
         self.grid_size += delta
         await self.initialize_grid(
             instr_price=self.instr_price, grid_size=self.grid_size, grid_direction=self.direction)

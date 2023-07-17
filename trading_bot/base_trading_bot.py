@@ -29,6 +29,7 @@ class BaseTradingBot(ABC):
         self.start_timestamp = to_utc_timestamp(
             config['trading_parameters']['start_datetime'])
         self.orders_in_market = config['trading_parameters']['orders_in_market']
+        self.max_orders_amount = config['trading_parameters']['max_orders_amount']
 
         self.start_deposit = config['trading_parameters']['start_deposit']
         self.initial_usdc_deposit_on_wallet = None

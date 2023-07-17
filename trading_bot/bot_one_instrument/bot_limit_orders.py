@@ -48,9 +48,20 @@ class TradingBotOneInstrumentLimitOrders(BaseTradingBotOneInstrument):
             await self.grid_controller.link_take_profit_order(
                 take_profit_orde_id=take_profit_order['order_id'], limit_order_id=limit_order_info['order_id'])
 
+            if self.grid_controller.grid_size < self.max_orders_amount:
+                await self.grid_controller.change_grid_size(self.grid_controller.grid_size - self.max_orders_amount)
+                new_limit_order_price = self.grid_controller.current_grid[-1]
+                new_limit_order = await self.conn.create_limit_order(instrument_name=self.instr_name,
+                                                                     amount=take_profit_size,
+                                                                     price=new_limit_order_price,
+                                                                     action=self.limit_order_side)
+                await self.grid_controller.update_active_order_info(
+                    order_id=new_limit_order['order_id'], order_info=new_limit_order)
+
             await self.telegram_bot.send_message(
                 f'Limit order at the price {limit_order_info["price"]} was filled.'
-                f'Take profit order with the price {take_profit_order["price"]} was created.')
+                f'Take profit order with the price {take_profit_order["price"]} was created.'
+                f'New limit order with the price {new_limit_order["price"]} was created.')
             return True
         else:
             return False
@@ -65,14 +76,6 @@ class TradingBotOneInstrumentLimitOrders(BaseTradingBotOneInstrument):
 
             await self.grid_controller.remove_limit_order(order_id=limit_order_id)
             await self.grid_controller.remove_take_profit_order(order_id=take_profit_order_id)
-
-            # # remove from first dict
-            # self.take_profit_limit_orders.pop(
-            #     take_profit_order_id)
-            # # remove from second dict
-            # self.limit_take_profit_orders.pop(grid_limit_order['order_id'])
-            # # remove from active limit orders
-            # self.active_limit_orders.pop(grid_limit_order['order_id'])
 
             size = await self.get_size_to_trade(side=self.limit_order_side)
 
