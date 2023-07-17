@@ -78,7 +78,7 @@ class TradingBotOneInstrumentMarketOrders(BaseTradingBotOneInstrument):
         while True:
             async with self.lock:
                 self.current_instr_price = await self.get_instrument_price()
-                self.current_amount = await self.get_asset_amount_usdc(instrument_name=self.instr_name)
+                # self.current_amount = await self.get_asset_amount_usdc(instrument_name=self.instr_name)
 
                 local_grid = await self.calculate_local_grid()
                 print('instrument price:', self.current_instr_price)

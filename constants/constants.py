@@ -11,7 +11,7 @@ ETH_BTC = 'ETH_BTC'
 
 NDIGITS_PRICES_ROUNDING = {
     BTC_PERPETUAL: 2,
-    ETH_PERPETUAL: 1,
+    ETH_PERPETUAL: 2,
     ETH_BTC: 4,
     ETH_USDC: 4,
     BTC_USDC: 4
@@ -20,3 +20,8 @@ NDIGITS_PRICES_ROUNDING = {
 # ------------ Order Side ------------
 ORDER_SIDE_BUY = 'BUY'
 ORDER_SIDE_SELL = 'SELL'
+
+# ------------ Grid Direction ------------
+
+GRID_DIRECTION_LONG = 'long'
+GRID_DIRECTION_SHORT = 'short'
