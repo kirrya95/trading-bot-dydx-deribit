@@ -22,12 +22,12 @@ class GridControllerTwoInstruments(BaseGridController):
 
     async def update_pending_limit_order_info(self, instr1_order_id: str, instr1_order_info: dict,
                                               instr2_order_id: str, instr2_order_info: dict):
-        key = hash((instr1_order_id, instr2_order_id))
+        key = await self.get_orders_hash(instr1_order_id, instr2_order_id)
         self.pending_limit_orders[key][instr1_order_id] = instr1_order_info
         self.pending_limit_orders[key][instr2_order_id] = instr2_order_info
 
     async def del_pending_limit_order_info(self, instr1_order_id: str, instr2_order_id: str):
-        key = hash((instr1_order_id, instr2_order_id))
+        key = await self.get_orders_hash(instr1_order_id, instr2_order_id)
         self.pending_limit_orders[key].pop(instr1_order_id)
         self.pending_limit_orders[key].pop(instr2_order_id)
         if not self.pending_limit_orders[key]:
