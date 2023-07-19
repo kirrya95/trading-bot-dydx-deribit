@@ -25,8 +25,6 @@ class BaseTradingBotOneInstrument(BaseTradingBot):
         self.instr_name = config['trading_parameters']['instrument_1']
         self.kind = config['trading_parameters']['kind_1']
 
-        self.limit_order_side = OrderSides.ORDER_SIDE_BUY if self.grid_direction == GridDirections.GRID_DIRECTION_LONG else OrderSides.ORDER_SIDE_SELL
-        self.take_profit_side = OrderSides.ORDER_SIDE_SELL if self.grid_direction == GridDirections.GRID_DIRECTION_LONG else OrderSides.ORDER_SIDE_BUY
 
         self.initial_instr_price = None
         self.current_instr_price = None

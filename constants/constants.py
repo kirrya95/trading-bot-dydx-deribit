@@ -22,6 +22,7 @@ class OrderSides:
 
 # ------------ Grid Direction ------------
 
+
 @dataclass
 @add_get_attributes
 class GridDirections:

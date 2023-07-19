@@ -9,7 +9,7 @@ from constants import *
 
 
 from .base_bot_one_instrument import BaseTradingBotOneInstrument
-from .grid_controller_one_intrument import GridController
+from .grid_controller_one_intsrument import GridControllerOneInstrument
 
 
 config = load_config('config.yaml')
@@ -24,7 +24,7 @@ class TradingBotOneInstrumentLimitOrders(BaseTradingBotOneInstrument):
 
         self.ndigits_rounding = NDIGITS_PRICES_ROUNDING[self.instr_name]
 
-        self.grid_controller = GridController(
+        self.grid_controller = GridControllerOneInstrument(
             ndigits_rounding=self.ndigits_rounding)
 
     async def check_limit_order_fullfilled(self, limit_order_id) -> bool:

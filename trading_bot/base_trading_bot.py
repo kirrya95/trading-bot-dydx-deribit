@@ -1,10 +1,11 @@
 import asyncio
 import time
+import typing as tp
 from abc import ABC, abstractmethod
 
-from connectors import AbstractConnector
 from telegram_bot import TelegramNotifier
 
+from connectors import dYdXConnection, DeribitConnection
 from utils import load_config, to_utc_timestamp
 from constants import *
 
@@ -14,7 +15,8 @@ config = load_config('config.yaml')
 
 class BaseTradingBot(ABC):
     def __init__(self,
-                 conn,
+                 conn: tp.Union[DeribitConnection,
+                                dYdXConnection],
                  telegram_bot: TelegramNotifier):
 
         self.lock = asyncio.Lock()
@@ -33,6 +35,9 @@ class BaseTradingBot(ABC):
 
         self.start_deposit = config['trading_parameters']['start_deposit']
         self.initial_usdc_deposit_on_wallet = None
+
+        self.limit_order_side = OrderSides.ORDER_SIDE_BUY if self.grid_direction == GridDirections.GRID_DIRECTION_LONG else OrderSides.ORDER_SIDE_SELL
+        self.take_profit_side = OrderSides.ORDER_SIDE_SELL if self.grid_direction == GridDirections.GRID_DIRECTION_LONG else OrderSides.ORDER_SIDE_BUY
 
     async def get_seconds_until_start(self):
         current_timestamp = time.time()

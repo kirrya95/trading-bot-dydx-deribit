@@ -7,7 +7,7 @@ from constants import *
 config = load_config('config.yaml')
 
 
-class GridController(BaseGridController):
+class GridControllerOneInstrument(BaseGridController):
     def __init__(self, ndigits_rounding: int):
         super().__init__(ndigits_rounding=ndigits_rounding)
 
