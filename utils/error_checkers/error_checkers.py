@@ -14,7 +14,7 @@ def check_grid_direction(func):
         grid_direction = bound.arguments.get('grid_direction')
         if grid_direction not in [GridDirections.GRID_DIRECTION_LONG, GridDirections.GRID_DIRECTION_SHORT]:
             raise ValueError(
-                f'Incorrect side. Should be either {GridDirections.GRID_DIRECTION_LONG} or {GridDirections.GRID_DIRECTION_SHORT}')
+                f'Incorrect direction. Should be either {GridDirections.GRID_DIRECTION_LONG} or {GridDirections.GRID_DIRECTION_SHORT}')
         return await func(*args, **kwargs)
     return wrapper
 

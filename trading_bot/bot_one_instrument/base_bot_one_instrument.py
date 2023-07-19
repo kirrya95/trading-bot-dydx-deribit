@@ -31,8 +31,8 @@ class BaseTradingBotOneInstrument(BaseTradingBot):
         self.initial_amount = None
         self.current_amount = None
 
-        self.initial_usdc_balance = None
-        self.current_usdc_balance = None
+        # self.initial_usdc_balance = None
+        # self.current_usdc_balance = None
 
     async def get_instrument_price(self, side: tp.Union[OrderSides.ORDER_SIDE_BUY, OrderSides.ORDER_SIDE_SELL]) -> float:
         if side not in [OrderSides.ORDER_SIDE_BUY, OrderSides.ORDER_SIDE_SELL]:

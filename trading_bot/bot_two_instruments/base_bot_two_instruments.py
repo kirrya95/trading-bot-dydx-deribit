@@ -43,12 +43,22 @@ class BaseTradingBotTwoInstruments(BaseTradingBot):
         # self.current_amount1 = None
         # self.current_amount2 = None
 
-        self.active_spreads = []
+        # self.active_spreads = []
         # self.active_positions = []
-        self.take_profit_spreads = []
+        # self.take_profit_spreads = []
 
-    async def get_spread_price(self, instr1_price: float, instr2_price: float) -> float:
+    @check_grid_direction
+    async def get_spread_price_from_two_instr_prices(self, instr1_prices: float, instr2_prices: float, direction) -> float:
         spread_operator = config['trading_parameters']['spread_operator']
+
+        if direction == GridDirections.GRID_DIRECTION_LONG:
+            instr1_price = instr1_prices['best_ask']
+            instr2_price = instr2_prices['best_bid']
+        elif direction == GridDirections.GRID_DIRECTION_SHORT:
+            instr1_price = instr1_prices['best_bid']
+            instr2_price = instr2_prices['best_ask']
+        else:
+            pass  # because we have grid direction checker
 
         if spread_operator == '/':
             spread_price = instr1_price / instr2_price
@@ -61,6 +71,9 @@ class BaseTradingBotTwoInstruments(BaseTradingBot):
         else:
             raise ValueError(f"Invalid spread operator: {spread_operator}")
         return spread_price
+
+    # async def get_spread_price(self, instr1_price: float, instr2_price: float) -> float:
+    #     pass
 
     # async def get_instruments_prices(self, grid_direction: str):
 

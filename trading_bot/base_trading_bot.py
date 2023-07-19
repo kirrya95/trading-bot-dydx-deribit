@@ -36,6 +36,8 @@ class BaseTradingBot(ABC):
         self.start_deposit = config['trading_parameters']['start_deposit']
         self.initial_usdc_deposit_on_wallet = None
 
+        self.anti_grid_direction = GridDirections.GRID_DIRECTION_SHORT if self.grid_direction == GridDirections.GRID_DIRECTION_LONG else GridDirections.GRID_DIRECTION_LONG
+
         self.limit_order_side = OrderSides.ORDER_SIDE_BUY if self.grid_direction == GridDirections.GRID_DIRECTION_LONG else OrderSides.ORDER_SIDE_SELL
         self.take_profit_side = OrderSides.ORDER_SIDE_SELL if self.grid_direction == GridDirections.GRID_DIRECTION_LONG else OrderSides.ORDER_SIDE_BUY
 
