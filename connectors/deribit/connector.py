@@ -191,7 +191,7 @@ class DeribitConnection(AbstractConnector):
 
     async def get_asset_price(self, instrument_name,
                               # action
-                              ):
+                              ) -> dict:
         # if action not in ['bid', 'ask']:
         #     raise ValueError(
         #         'Invalid action. Please choose either "bid" or "ask".')
@@ -211,7 +211,7 @@ class DeribitConnection(AbstractConnector):
 
         if 'result' in result and 'best_bid_price' in result['result'] and 'best_ask_price' in result['result']:
             # return result['result']['best_bid_price'] if action == 'bid' else result['result']['best_ask_price']
-            return {'best_bid': result['result']['best_bid_price'], 
+            return {'best_bid': result['result']['best_bid_price'],
                     'best_ask': result['result']['best_ask_price']}
         else:
             raise ValueError(

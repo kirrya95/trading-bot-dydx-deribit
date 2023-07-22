@@ -26,10 +26,10 @@ class TradingBotOneInstrumentMarketOrders(BaseTradingBotOneInstrument):
 
     async def check_for_grid_level_take_profit(self, tp_price: float):
         if self.side == 'long' and self.current_instr_price >= tp_price:
-            instr_order = await self.conn.execute_market_order(instrument_name=self.instr_name, amount=self.size, side=ORDER_SIDE_SELL)
+            instr_order = await self.conn.execute_market_order(instrument_name=self.instr_name, amount=self.size, side=OrderSides.ORDER_SIDE_SELL)
             self.take_profit_asset_prices.remove(tp_price)
         elif self.side == 'short' and self.current_instr_price <= tp_price:
-            instr_order = await self.conn.execute_market_order(instrument_name=self.instr_name, amount=self.size, side=ORDER_SIDE_BUY)
+            instr_order = await self.conn.execute_market_order(instrument_name=self.instr_name, amount=self.size, side=OrderSides.ORDER_SIDE_BUY)
             self.take_profit_asset_prices.remove(tp_price)
         else:
             return
@@ -43,14 +43,14 @@ class TradingBotOneInstrumentMarketOrders(BaseTradingBotOneInstrument):
         if self.side == 'long':
             if grid_level >= self.initial_instr_price or self.current_instr_price > grid_level:
                 return
-            instr_order = await self.conn.execute_market_order(instrument_name=self.instr_name, amount=self.size, side=ORDER_SIDE_SELL)
+            instr_order = await self.conn.execute_market_order(instrument_name=self.instr_name, amount=self.size, side=OrderSides.ORDER_SIDE_SELL)
             self.active_asset_prices.append(grid_level)
             self.take_profit_asset_prices.append(
                 grid_level + self.take_profit_step)
         elif self.side == 'short':
             if grid_level <= self.initial_instr_price or self.current_instr_price < grid_level:
                 return
-            instr_order = await self.conn.execute_market_order(instrument_name=self.instr_name, amount=self.size, side=ORDER_SIDE_BUY)
+            instr_order = await self.conn.execute_market_order(instrument_name=self.instr_name, amount=self.size, side=OrderSides.ORDER_SIDE_BUY)
             self.active_asset_prices.append(grid_level)
             self.take_profit_asset_prices.append(
                 grid_level + self.take_profit_step)

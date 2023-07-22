@@ -22,12 +22,12 @@ class TradingBotTwoInstrumentsMarketOrders(BaseTradingBotTwoInstruments):
 
     async def check_for_grid_level_take_profit(self, tp_spread):
         if self.side == 'long' and self.current_spread_price >= tp_spread:
-            instr1_order = await self.conn.execute_market_order(instrument_name=self.instr1_name, amount=self.size, side=ORDER_SIDE_SELL)
-            instr2_order = await self.conn.execute_market_order(instrument_name=self.instr2_name, amount=self.size, side=ORDER_SIDE_BUY)
+            instr1_order = await self.conn.execute_market_order(instrument_name=self.instr1_name, amount=self.size, side=OrderSides.ORDER_SIDE_SELL)
+            instr2_order = await self.conn.execute_market_order(instrument_name=self.instr2_name, amount=self.size, side=OrderSides.ORDER_SIDE_BUY)
             self.take_profit_spreads.remove(tp_spread)
         elif self.side == 'short' and self.current_spread_price <= tp_spread:
-            instr1_order = await self.conn.execute_market_order(instrument_name=self.instr1_name, amount=self.size, side=ORDER_SIDE_BUY)
-            instr2_order = await self.conn.execute_market_order(instrument_name=self.instr2_name, amount=self.size, side=ORDER_SIDE_SELL)
+            instr1_order = await self.conn.execute_market_order(instrument_name=self.instr1_name, amount=self.size, side=OrderSides.ORDER_SIDE_BUY)
+            instr2_order = await self.conn.execute_market_order(instrument_name=self.instr2_name, amount=self.size, side=OrderSides.ORDER_SIDE_SELL)
             self.take_profit_spreads.remove(tp_spread)
         else:
             return
@@ -46,15 +46,15 @@ class TradingBotTwoInstrumentsMarketOrders(BaseTradingBotTwoInstruments):
         if self.side == 'long':
             if grid_level >= self.initial_spread_price or self.current_spread_price > grid_level:
                 return
-            instr1_order = await self.conn.execute_market_order(instrument_name=self.instr1_name, amount=self.size, side=ORDER_SIDE_BUY)
-            instr2_order = await self.conn.execute_market_order(instrument_name=self.instr2_name, amount=self.size, side=ORDER_SIDE_SELL)
+            instr1_order = await self.conn.execute_market_order(instrument_name=self.instr1_name, amount=self.size, side=OrderSides.ORDER_SIDE_BUY)
+            instr2_order = await self.conn.execute_market_order(instrument_name=self.instr2_name, amount=self.size, side=OrderSides.ORDER_SIDE_SELL)
             self.active_spreads.append(grid_level)
             self.take_profit_spreads.append(grid_level + self.take_profit_step)
         elif self.side == 'short':
             if grid_level <= self.initial_spread_price or self.current_spread_price < grid_level:
                 return
-            instr1_order = await self.conn.execute_market_order(instrument_name=self.instr1_name, amount=self.size, side=ORDER_SIDE_SELL)
-            instr2_order = await self.conn.execute_market_order(instrument_name=self.instr2_name, amount=self.size, side=ORDER_SIDE_BUY)
+            instr1_order = await self.conn.execute_market_order(instrument_name=self.instr1_name, amount=self.size, side=OrderSides.ORDER_SIDE_SELL)
+            instr2_order = await self.conn.execute_market_order(instrument_name=self.instr2_name, amount=self.size, side=OrderSides.ORDER_SIDE_BUY)
             self.active_spreads.append(grid_level)
             self.take_profit_spreads.append(grid_level + self.take_profit_step)
         else:

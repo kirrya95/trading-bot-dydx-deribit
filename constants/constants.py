@@ -1,27 +1,30 @@
-# NDIGITS_ETH_PRICE_ROUNDING = 2
-# NDIGITS_BTC_PRICE_ROUNDING = 1
-
-# ------------ Instruments ------------
-BTC_PERPETUAL = 'BTC-PERPETUAL'
-ETH_PERPETUAL = 'ETH-PERPETUAL'
-ETH_USDC = 'ETH_USDC'
-BTC_USDC = 'BTC_USDC'
-ETH_BTC = 'ETH_BTC'
+from dataclasses import dataclass
+from .deribit_markets import DeribitPerpetualMarkets, DeribitSpotMarkets
+from utils import add_get_attributes
 
 
 NDIGITS_PRICES_ROUNDING = {
-    BTC_PERPETUAL: 2,
-    ETH_PERPETUAL: 2,
-    ETH_BTC: 4,
-    ETH_USDC: 4,
-    BTC_USDC: 4
+    DeribitPerpetualMarkets.BTC_PERPETUAL: 2,
+    DeribitPerpetualMarkets.ETH_PERPETUAL: 2,
+    DeribitSpotMarkets.ETH_BTC: 4,
+    DeribitSpotMarkets.ETH_USDC: 4,
+    DeribitSpotMarkets.BTC_USDC: 4
 }
 
 # ------------ Order Side ------------
-ORDER_SIDE_BUY = 'BUY'
-ORDER_SIDE_SELL = 'SELL'
+
+
+@dataclass
+@add_get_attributes
+class OrderSides:
+    ORDER_SIDE_BUY = 'BUY'
+    ORDER_SIDE_SELL = 'SELL'
 
 # ------------ Grid Direction ------------
 
-GRID_DIRECTION_LONG = 'long'
-GRID_DIRECTION_SHORT = 'short'
+
+@dataclass
+@add_get_attributes
+class GridDirections:
+    GRID_DIRECTION_LONG = 'long'
+    GRID_DIRECTION_SHORT = 'short'

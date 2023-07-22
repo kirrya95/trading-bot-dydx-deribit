@@ -1,18 +1,15 @@
 import typing as tp
 import time
 import asyncio
-from copy import deepcopy
 
 from telegram_bot import TelegramNotifier
 from connectors import dYdXConnection, DeribitConnection
 from utils import load_config, to_utc_timestamp
 from constants import *
 
-# from trading_bot.base_bot import BaseTradingBot
 
-from trading_bot.bot_one_instrument import BaseTradingBotOneInstrument
-
-from .grid_controller import GridController
+from .base_bot_one_instrument import BaseTradingBotOneInstrument
+from .grid_controller_one_intsrument import GridControllerOneInstrument
 
 
 config = load_config('config.yaml')
@@ -27,16 +24,16 @@ class TradingBotOneInstrumentLimitOrders(BaseTradingBotOneInstrument):
 
         self.ndigits_rounding = NDIGITS_PRICES_ROUNDING[self.instr_name]
 
-        self.grid_controller = GridController(
+        self.grid_controller = GridControllerOneInstrument(
             ndigits_rounding=self.ndigits_rounding)
 
     async def check_limit_order_fullfilled(self, limit_order_id) -> bool:
         limit_order_info = await self.conn.get_order(order_id=limit_order_id)
 
         if limit_order_info['order_state'] == 'filled':
-            take_profit_size = await self.get_size_to_trade(side=self.take_profit_side)
+            take_profit_size = await self.get_size_to_trade(side=self.take_profit_side, instr_name=self.instr_name)
             take_profit_price = limit_order_info['price'] + \
-                self.take_profit_step if self.limit_order_side == ORDER_SIDE_BUY else limit_order_info[
+                self.take_profit_step if self.limit_order_side == OrderSides.ORDER_SIDE_BUY else limit_order_info[
                     'price'] - self.take_profit_step
             take_profit_order = await self.conn.create_limit_order(instrument_name=self.instr_name,
                                                                    amount=take_profit_size,
@@ -82,7 +79,7 @@ class TradingBotOneInstrumentLimitOrders(BaseTradingBotOneInstrument):
 
             await self.grid_controller.remove_limit_order(order_id=limit_order_id)
 
-            size = await self.get_size_to_trade(side=self.limit_order_side)
+            size = await self.get_size_to_trade(side=self.limit_order_side, instr_name=self.instr_name)
 
             # create grid limit order
             new_limit_order = await self.conn.create_limit_order(instrument_name=self.instr_name,
@@ -100,7 +97,7 @@ class TradingBotOneInstrumentLimitOrders(BaseTradingBotOneInstrument):
             return False
 
     async def fill_grid_with_limit_orders(self):
-        size = await self.get_size_to_trade(side=self.limit_order_side)
+        size = await self.get_size_to_trade(side=self.limit_order_side, instr_name=self.instr_name)
         for grid_level in self.grid_controller.current_grid:
             order = await self.conn.create_limit_order(instrument_name=self.instr_name,
                                                        amount=size,
@@ -122,6 +119,7 @@ class TradingBotOneInstrumentLimitOrders(BaseTradingBotOneInstrument):
         # important for some reasons
         self.current_instr_price = self.initial_instr_price
 
+        print(self.grid_direction)
         await self.grid_controller.initialize_grid(instr_price=self.initial_instr_price,
                                                    grid_size=self.orders_in_market,
                                                    grid_direction=self.grid_direction)
