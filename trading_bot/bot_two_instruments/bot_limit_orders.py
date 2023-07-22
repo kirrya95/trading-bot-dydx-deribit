@@ -4,7 +4,7 @@ import asyncio
 
 from telegram_bot import TelegramNotifier
 from connectors import dYdXConnection, DeribitConnection
-from utils import load_config, to_utc_timestamp
+from utils import load_config, to_utc_timestamp, get_direction_from_side, get_side_from_direction
 from utils.error_checkers import check_grid_direction
 from constants import *
 
@@ -92,18 +92,23 @@ class TradingBotTwoInstrumentsLimitOrders(BaseTradingBotTwoInstruments):
 
             for grid_level in await self.grid_controller.get_filtered_grid():
                 if grid_level >= self.current_spread_price:
-                    await self.get_size_to_trade(side=self.grid_direction, instr_name=self.instr1_name)
+                    side1 = get_side_from_direction(
+                        direction=self.grid_direction)
+                    side2 = get_side_from_direction(
+                        direction=self.anti_grid_direction)
+                    amount1 = await self.get_size_to_trade(side=side1, instr_name=self.instr1_name)
+                    amount2 = await self.get_size_to_trade(side=side2, instr_name=self.instr2_name)
+
                     # await self.conn.cancel_all_orders(instrument_name=self.instr1_name, kind=self.kind1)
                     # await self.conn.cancel_all_orders(instrument_name=self.instr2_name, kind=self.kind2)
                     # await self.create_limit_order(instr_name=self.instr1_name,)
 
-                    # await self.create_batch_limit_order(instr1_amount=self.amount1,
-                    #                                     instr2_amount=self.amount2,
-                    #                                     instr1_price=grid_level,
-                    #                                     instr2_price=grid_level,
-                    #                                     direction=self.grid_direction)
-                    # await self.grid_controller.update_last_achieved_level(grid_level)
-                    # pass
+                    await self.create_batch_limit_order(instr1_amount=amount1,
+                                                        instr2_amount=amount2,
+                                                        instr1_price=grid_level,
+                                                        instr2_price=grid_level,
+                                                        direction=self.grid_direction)
+                    await self.grid_controller.update_last_achieved_level(grid_level)
 
 
 if __name__ == '__main__':

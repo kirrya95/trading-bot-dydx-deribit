@@ -49,7 +49,7 @@ class GridControllerTwoInstruments(BaseGridController):
     ### GETTERS ###
 
     async def get_filtered_grid(self):
-        print(self.last_achieved_level)
+        print('last achieved level', self.last_achieved_level)
         if self.last_achieved_level is None:
             return self.current_grid
         index_of_last_achieved_level = self.current_grid.index(
