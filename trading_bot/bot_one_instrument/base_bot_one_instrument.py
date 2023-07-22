@@ -51,28 +51,3 @@ class BaseTradingBotOneInstrument(BaseTradingBot):
 
         return instr_price
 
-    @check_side
-    async def get_size_to_trade(self, side):
-
-        if self.kind == 'future':
-            size = config['trading_parameters']['order_size']
-        elif self.kind == DeribitAvailableKinds.SPOT:
-            if self.instr_name == DeribitSpotMarkets.ETH_BTC:
-                if side == OrderSides.ORDER_SIDE_BUY:
-                    price = (await self.conn.get_asset_price(DeribitSpotMarkets.ETH_USDC))['best_ask']
-                    print(f'Price: {price}')
-                    size = config['trading_parameters']['order_size'] / price
-                    return round(size, ndigits=NDIGITS_PRICES_ROUNDING[DeribitSpotMarkets.ETH_USDC])
-                elif side == OrderSides.ORDER_SIDE_SELL:
-                    price = (await self.conn.get_asset_price(DeribitSpotMarkets.BTC_USDC))['best_bid']
-                    print(f'Price: {price}')
-                    size = config['trading_parameters']['order_size'] / price
-                    return round(size, ndigits=NDIGITS_PRICES_ROUNDING[DeribitSpotMarkets.BTC_USDC])
-            else:
-                size = config['trading_parameters']['order_size'] / \
-                    self.current_instr_price
-
-        else:
-            raise ValueError('Incorrect kind. Should be either future or spot')
-
-        return round(size, ndigits=NDIGITS_PRICES_ROUNDING[self.instr_name])

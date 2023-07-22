@@ -55,7 +55,6 @@ class TradingBotTwoInstrumentsLimitOrders(BaseTradingBotTwoInstruments):
                                                                 amount=instr2_amount,
                                                                 price=instr2_price,
                                                                 action=instr2_side)
-        
 
         await self.telegram_bot.send_message(
             f'Created orders on {self.instr1_name} and {self.instr2_name}')
@@ -70,9 +69,11 @@ class TradingBotTwoInstrumentsLimitOrders(BaseTradingBotTwoInstruments):
         initial_prices_instr1 = await self.conn.get_asset_price(instrument_name=self.instr1_name)
         initial_prices_instr2 = await self.conn.get_asset_price(instrument_name=self.instr2_name)
 
+        print(self.grid_direction)
         self.initial_spread_price = await self.get_spread_price_from_two_instr_prices(instr1_prices=initial_prices_instr1,
                                                                                       instr2_prices=initial_prices_instr2,
-                                                                                      direction=self.grid_direction)
+                                                                                      grid_direction=self.grid_direction)
+        print('hi')
 
         await self.grid_controller.initialize_grid(instr_price=self.initial_spread_price,
                                                    grid_size=self.orders_in_market,
@@ -85,15 +86,24 @@ class TradingBotTwoInstrumentsLimitOrders(BaseTradingBotTwoInstruments):
 
                 self.current_spread_price = await self.get_spread_price_from_two_instr_prices(instr1_prices=current_prices_instr1,
                                                                                               instr2_prices=current_prices_instr2,
-                                                                                              direction=self.anti_grid_direction)
+                                                                                              grid_direction=self.anti_grid_direction)
 
-                print('current grid:', self.grid_controller.current_grid)
+            print('current grid:', self.grid_controller.current_grid)
 
-                for grid_level in await self.grid_controller.get_filtered_grid():
-                    if grid_level < self.current_spread_price:
-                        # await self.conn.cancel_all_orders(instrument_name=self.instr1_name, kind=self.kind1)
-                        # await self.conn.cancel_all_orders(instrument_name=self.instr2_name, kind=self.kind2)
-                        await self.create_limit_order(instr_name=self.instr1_name,)
+            for grid_level in await self.grid_controller.get_filtered_grid():
+                if grid_level >= self.current_spread_price:
+                    await self.get_size_to_trade(side=self.grid_direction, instr_name=self.instr1_name)
+                    # await self.conn.cancel_all_orders(instrument_name=self.instr1_name, kind=self.kind1)
+                    # await self.conn.cancel_all_orders(instrument_name=self.instr2_name, kind=self.kind2)
+                    # await self.create_limit_order(instr_name=self.instr1_name,)
+
+                    # await self.create_batch_limit_order(instr1_amount=self.amount1,
+                    #                                     instr2_amount=self.amount2,
+                    #                                     instr1_price=grid_level,
+                    #                                     instr2_price=grid_level,
+                    #                                     direction=self.grid_direction)
+                    # await self.grid_controller.update_last_achieved_level(grid_level)
+                    # pass
 
 
 if __name__ == '__main__':

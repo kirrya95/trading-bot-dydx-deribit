@@ -48,13 +48,13 @@ class BaseTradingBotTwoInstruments(BaseTradingBot):
         # self.take_profit_spreads = []
 
     @check_grid_direction
-    async def get_spread_price_from_two_instr_prices(self, instr1_prices: float, instr2_prices: float, direction) -> float:
+    async def get_spread_price_from_two_instr_prices(self, instr1_prices: float, instr2_prices: float, grid_direction) -> float:
         spread_operator = config['trading_parameters']['spread_operator']
 
-        if direction == GridDirections.GRID_DIRECTION_LONG:
+        if grid_direction == GridDirections.GRID_DIRECTION_LONG:
             instr1_price = instr1_prices['best_ask']
             instr2_price = instr2_prices['best_bid']
-        elif direction == GridDirections.GRID_DIRECTION_SHORT:
+        elif grid_direction == GridDirections.GRID_DIRECTION_SHORT:
             instr1_price = instr1_prices['best_bid']
             instr2_price = instr2_prices['best_ask']
         else:

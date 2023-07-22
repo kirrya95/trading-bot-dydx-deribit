@@ -12,6 +12,8 @@ def check_grid_direction(func):
         bound = sig.bind(*args, **kwargs)
         bound.apply_defaults()
         grid_direction = bound.arguments.get('grid_direction')
+        if grid_direction is None:
+            raise ValueError('Grid direction is not specified (None)')
         if grid_direction not in [GridDirections.GRID_DIRECTION_LONG, GridDirections.GRID_DIRECTION_SHORT]:
             raise ValueError(
                 f'Incorrect direction. Should be either {GridDirections.GRID_DIRECTION_LONG} or {GridDirections.GRID_DIRECTION_SHORT}')

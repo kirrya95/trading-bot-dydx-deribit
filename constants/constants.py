@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from .markets import DeribitPerpetualMarkets, DeribitSpotMarkets
+from .deribit_markets import DeribitPerpetualMarkets, DeribitSpotMarkets
 from utils import add_get_attributes
 
 

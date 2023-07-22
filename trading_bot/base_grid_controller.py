@@ -22,7 +22,9 @@ class BaseGridController:
         self.instr_price = instr_price
         self.grid_size = grid_size
         self.direction = grid_direction
-        self.current_grid = None
+        # self.current_grid = None 
+        # self.last_achieved_level = instr_price
+        # print('last_achieved_level', self.last_achieved_level)
         if grid_direction == GridDirections.GRID_DIRECTION_LONG:
             self.current_grid = [round(instr_price - self.grid_step * i, ndigits=self.grid_ndigits_rounding)
                                  for i in range(1, grid_size + 1)]

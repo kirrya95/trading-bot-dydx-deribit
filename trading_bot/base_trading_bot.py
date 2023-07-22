@@ -7,6 +7,7 @@ from telegram_bot import TelegramNotifier
 
 from connectors import dYdXConnection, DeribitConnection
 from utils import load_config, to_utc_timestamp
+from utils.error_checkers import *
 from constants import *
 
 
@@ -84,6 +85,32 @@ class BaseTradingBot(ABC):
     #         instrument_name=instrument_name)
     #     amount = await self.conn.get_position(currency=currency, instrument_name=instrument_name)
     #     return amount
+
+    @check_side
+    async def get_size_to_trade(self, side, instr_name):
+
+        if self.kind == 'future':
+            size = config['trading_parameters']['order_size']
+        elif self.kind == DeribitAvailableKinds.SPOT:
+            if instr_name == DeribitSpotMarkets.ETH_BTC:
+                if side == OrderSides.ORDER_SIDE_BUY:
+                    price = (await self.conn.get_asset_price(DeribitSpotMarkets.ETH_USDC))['best_ask']
+                    print(f'Price: {price}')
+                    size = config['trading_parameters']['order_size'] / price
+                    return round(size, ndigits=NDIGITS_PRICES_ROUNDING[DeribitSpotMarkets.ETH_USDC])
+                elif side == OrderSides.ORDER_SIDE_SELL:
+                    price = (await self.conn.get_asset_price(DeribitSpotMarkets.BTC_USDC))['best_bid']
+                    print(f'Price: {price}')
+                    size = config['trading_parameters']['order_size'] / price
+                    return round(size, ndigits=NDIGITS_PRICES_ROUNDING[DeribitSpotMarkets.BTC_USDC])
+            else:
+                size = config['trading_parameters']['order_size'] / \
+                    self.current_instr_price
+
+        else:
+            raise ValueError('Incorrect kind. Should be either future or spot')
+
+        return round(size, ndigits=NDIGITS_PRICES_ROUNDING[instr_name])
 
     async def send_strategy_info(self):
         instr1_name = config['trading_parameters']['instrument_1']
