@@ -19,7 +19,7 @@ class AbstractConnector(ABC):
         pass
 
     @abstractmethod
-    async def get_asset_price(self, instrument_name):
+    async def get_asset_price(self, instrument_name) -> dict:
         pass
 
     @abstractmethod

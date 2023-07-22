@@ -46,14 +46,14 @@ class BaseTradingBot(ABC):
         current_timestamp = time.time()
         return max(self.start_timestamp - current_timestamp, 0)
 
-    async def check_total_take_profit_reach(self, current_deposit_usdc: float):
-        take_profit_deposit = config['trading_parameters']['take_profit_deposit']
-        if self.side == 'long' and current_deposit_usdc >= self.take_profit_step:
-            return True
-        elif self.side == 'short' and current_deposit_usdc <= -self.take_profit_step:
-            return True
-        else:
-            return False
+    # async def check_total_take_profit_reach(self, current_deposit_usdc: float):
+    #     # take_profit_deposit = config['trading_parameters']['take_profit_deposit']
+    #     if self.side == 'long' and current_deposit_usdc >= self.take_profit_step:
+    #         return True
+    #     elif self.side == 'short' and current_deposit_usdc <= -self.take_profit_step:
+    #         return True
+    #     else:
+    #         return False
 
     async def tidy_instrument_amount(self,
                                      instrument_name: str,
@@ -87,11 +87,11 @@ class BaseTradingBot(ABC):
     #     return amount
 
     @check_side
-    async def get_size_to_trade(self, side, instr_name):
+    async def get_size_to_trade(self, instr_name, side, kind):
 
-        if self.kind == 'future':
+        if kind == 'future':
             size = config['trading_parameters']['order_size']
-        elif self.kind == DeribitAvailableKinds.SPOT:
+        elif kind == DeribitAvailableKinds.SPOT:
             if instr_name == DeribitSpotMarkets.ETH_BTC:
                 if side == OrderSides.ORDER_SIDE_BUY:
                     price = (await self.conn.get_asset_price(DeribitSpotMarkets.ETH_USDC))['best_ask']
