@@ -102,7 +102,7 @@ class TradingBotOneInstrumentLimitOrders(BaseTradingBotOneInstrument):
         size = await self.get_size_to_trade(instr_name=self.instr_name,
                                             side=self.limit_order_side,
                                             kind=self.kind)
-        for grid_level in self.grid_controller.current_grid:
+        for grid_level in self.grid_controller.initial_grid:
             order = await self.conn.create_limit_order(instrument_name=self.instr_name,
                                                        amount=size,
                                                        price=grid_level,

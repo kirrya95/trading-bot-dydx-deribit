@@ -93,7 +93,7 @@ class TradingBotTwoInstrumentsLimitOrders(BaseTradingBotTwoInstruments):
                                                                                               instr2_prices=current_prices_instr2,
                                                                                               grid_direction=self.anti_grid_direction)
 
-            print('current grid:', self.grid_controller.current_grid)
+            print('filtered current grid:', await self.grid_controller.get_filtered_grid())
             print('current spread price:', self.current_spread_price)
 
             for grid_level in await self.grid_controller.get_filtered_grid():
