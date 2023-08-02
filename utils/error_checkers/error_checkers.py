@@ -29,6 +29,7 @@ def check_side(func):
         bound = sig.bind(*args, **kwargs)
         bound.apply_defaults()
         side = bound.arguments.get('side')
+        side = side.upper()
         if side not in [OrderSides.ORDER_SIDE_BUY, OrderSides.ORDER_SIDE_SELL]:
             raise ValueError(
                 f'Incorrect side. Should be either {OrderSides.ORDER_SIDE_BUY} or {OrderSides.ORDER_SIDE_SELL}')

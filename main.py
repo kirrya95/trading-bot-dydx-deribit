@@ -62,7 +62,8 @@ async def main():
     # try:
     await asyncio.gather(
         trading_bot.run(),
-        trading_bot.send_strategy_info())
+        # trading_bot.send_strategy_info()
+        )
     # except Exception as e:
         # print(e)
         # await telegram_notifier.send_message(f'Exception: {e}', parse_mode='')

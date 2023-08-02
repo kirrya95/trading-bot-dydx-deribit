@@ -27,6 +27,9 @@ class BaseTradingBotTwoInstruments(BaseTradingBot):
         self.kind1 = config['trading_parameters']['kind_1']
         self.kind2 = config['trading_parameters']['kind_2']
 
+        self.two_instr_max_spread_price_deviation = config[
+            'trading_parameters']['two_instr_max_spread_price_deviation']
+
         self.order1_type = None
         self.order2_type = None
 
@@ -72,8 +75,20 @@ class BaseTradingBotTwoInstruments(BaseTradingBot):
             raise ValueError(f"Invalid spread operator: {spread_operator}")
         return spread_price
 
-    # async def get_spread_price(self, instr1_price: float, instr2_price: float) -> float:
-    #     pass
+    async def get_spread_price(self, instr1_price: float, instr2_price: float) -> float:
+        spread_operator = config['trading_parameters']['spread_operator']
+
+        if spread_operator == '/':
+            spread_price = instr1_price / instr2_price
+        elif spread_operator == '*':
+            spread_price = instr1_price * instr2_price
+        elif spread_operator == '+':
+            spread_price = instr1_price + instr2_price
+        elif spread_operator == '-':
+            spread_price = instr1_price - instr2_price
+        else:
+            raise ValueError(f"Invalid spread operator: {spread_operator}")
+        return spread_price
 
     # async def get_instruments_prices(self, grid_direction: str):
 

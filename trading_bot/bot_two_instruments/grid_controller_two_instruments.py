@@ -48,13 +48,14 @@ class GridControllerTwoInstruments(BaseGridController):
 
     ### GETTERS ###
 
-    async def get_filtered_grid(self):
+    @property
+    def current_grid(self):
         print('last achieved level', self.last_achieved_level)
         if self.last_achieved_level is None:
-            return self.current_grid
-        index_of_last_achieved_level = self.current_grid.index(
+            return self.initial_grid
+        index_of_last_achieved_level = self.initial_grid.index(
             self.last_achieved_level)
-        return self.current_grid[index_of_last_achieved_level + 1:]
+        return self.initial_grid[index_of_last_achieved_level + 1:]
 
     async def get_pending_limit_orders(self):
         return deepcopy(list(self.pending_limit_orders.keys()))
