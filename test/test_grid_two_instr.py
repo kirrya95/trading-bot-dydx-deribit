@@ -74,3 +74,18 @@ async def test_update_take_profit(grid_controller):
     grid_controller.update_take_profit_order(
         level=level, order1_id=take_profit_order1_id, order2_id=take_profit_order2_id)
     print(grid_controller.grid[level])
+
+    # should raise because already take profit exists
+    with pytest.raises(Exception):
+        _take_profit_order1_id = take_profit_order1_id + 1
+        grid_controller.update_take_profit_order(
+            level=level, order1_id=_take_profit_order1_id, order2_id=take_profit_order2_id)
+
+    # level that not exits
+    with pytest.raises(KeyError):
+        _level = level + grid_controller.grid_step * 1000
+        grid_controller.update_limit_order(
+            level=_level, order1_id=limit_order1_id, order2_id=limit_order2_id)
+
+    print(take_profit_order1_id)
+
