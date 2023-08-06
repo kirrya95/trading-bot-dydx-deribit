@@ -8,9 +8,9 @@ config = load_config('config.yaml')
 
 
 class BaseGridController:
-    def __init__(self, ndigits_rounding: int):
+    def __init__(self):
         self.grid_step = config['trading_parameters']['grid_step']
-        self.grid_ndigits_rounding = ndigits_rounding
+        self.grid_ndigits_rounding = config['trading_parameters']['grid_ndigits_rounding']
         self.instr_price = None
         self.grid_size = None
         self.direction = None
@@ -22,7 +22,7 @@ class BaseGridController:
         self.instr_price = instr_price
         self.grid_size = grid_size
         self.direction = grid_direction
-        # self.initial_grid = None 
+        # self.initial_grid = None
         # self.last_achieved_level = instr_price
         # print('last_achieved_level', self.last_achieved_level)
         if grid_direction == GridDirections.GRID_DIRECTION_LONG:

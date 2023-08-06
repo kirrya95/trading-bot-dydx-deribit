@@ -20,8 +20,8 @@ class GridEntry:
 
 
 class GridControllerTwoInstruments(BaseGridController):
-    def __init__(self, ndigits_rounding: int):
-        super().__init__(ndigits_rounding=ndigits_rounding)
+    def __init__(self):
+        super().__init__()
 
         # TODO: change this
         self.orders_in_market = 5
@@ -29,10 +29,6 @@ class GridControllerTwoInstruments(BaseGridController):
         self.grid: dict[int, GridEntry] = {}
         # warning: this dict potentially can be very large
         self.hash_to_orders = {}
-        # self.pending_limit_orders = {}
-        # self.pending_take_profit_orders = {}
-        # self.limit_to_take_profit_orders = {}  # limit -> take profit
-        # self.take_profit_to_limit_orders = {}  # take profit -> limit
 
     @check_grid_direction
     def initialize_grid(self, instr_price: float, grid_size: int, grid_direction: str):
@@ -64,7 +60,7 @@ class GridControllerTwoInstruments(BaseGridController):
 
     def update_limit_order(self, level: float, order1_id: int, order2_id: int):
         # check that 'reached' attr is False, and limit order hash is None
-        self.check_limitOrder(level)
+        self._check_limitOrder(level)
 
         self.grid[level].limit_order_hash = self.calculate_hash(
             order1_id, order2_id)
@@ -74,7 +70,7 @@ class GridControllerTwoInstruments(BaseGridController):
 
     def update_take_profit_order(self, level: float, order1_id: int, order2_id: int):
         # check if level is reached and limit order hash is not None
-        self.check_takeProfitOrder(level)
+        self._check_takeProfitOrder(level)
 
         take_profit_hash = self.calculate_hash(order1_id, order2_id)
         self.grid[level].take_profit_order_hash = take_profit_hash
@@ -86,7 +82,7 @@ class GridControllerTwoInstruments(BaseGridController):
 
     ### checkers ###
 
-    def check_limitOrder(self, level: float):
+    def _check_limitOrder(self, level: float):
         if self.grid[level].reached is True:
             raise Exception(
                 f'Level {level} is already reached!')
@@ -94,7 +90,7 @@ class GridControllerTwoInstruments(BaseGridController):
             raise Exception(
                 f'Limit order hash is not None for level {level}!')
 
-    def check_takeProfitOrder(self, level: float):
+    def _check_takeProfitOrder(self, level: float):
         if self.grid[level].reached is False:
             raise Exception(
                 f'Level {level} is not reached!')

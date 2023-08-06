@@ -10,7 +10,7 @@ from trading_bot.bot_two_instruments.grid_two import GridControllerTwoInstrument
 
 from constants import GridDirections
 
-config = load_config('config.yaml')
+# config = load_config('config.yaml')
 
 
 @pytest.fixture
@@ -40,11 +40,12 @@ async def test_initialize_grid(grid_controller):
         assert not grid_controller.grid[level].reached
 
 
-@pytest.mark.asyncio
-async def test_grid_overflow(grid_controller):
-    instr_price = 100.0
-    grid_size = 5
-    grid_direction = GridDirections.GRID_DIRECTION_LONG
+# @pytest.mark.asyncio
+# async def test_grid_overflow(grid_controller):
+#     instr_price = 100.0
+#     grid_size = 5
+#     grid_direction = GridDirections.GRID_DIRECTION_LONG
+#     assert False
 
 
 @pytest.mark.asyncio

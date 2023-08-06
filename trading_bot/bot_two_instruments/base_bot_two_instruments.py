@@ -26,6 +26,7 @@ class BaseTradingBotTwoInstruments(BaseTradingBot):
         self.instr2_name = config['trading_parameters']['instrument_2']
         self.kind1 = config['trading_parameters']['kind_1']
         self.kind2 = config['trading_parameters']['kind_2']
+        self.spread_operator = config['trading_parameters']['spread_operator']
 
         self.two_instr_max_spread_price_deviation = config[
             'trading_parameters']['two_instr_max_spread_price_deviation']
@@ -49,77 +50,3 @@ class BaseTradingBotTwoInstruments(BaseTradingBot):
         # self.active_spreads = []
         # self.active_positions = []
         # self.take_profit_spreads = []
-
-    @check_grid_direction
-    async def get_spread_price_from_two_instr_prices(self, instr1_prices: float, instr2_prices: float, grid_direction) -> float:
-        spread_operator = config['trading_parameters']['spread_operator']
-
-        if grid_direction == GridDirections.GRID_DIRECTION_LONG:
-            instr1_price = instr1_prices['best_ask']
-            instr2_price = instr2_prices['best_bid']
-        elif grid_direction == GridDirections.GRID_DIRECTION_SHORT:
-            instr1_price = instr1_prices['best_bid']
-            instr2_price = instr2_prices['best_ask']
-        else:
-            pass  # because we have grid direction checker
-
-        if spread_operator == '/':
-            spread_price = instr1_price / instr2_price
-        elif spread_operator == '*':
-            spread_price = instr1_price * instr2_price
-        elif spread_operator == '+':
-            spread_price = instr1_price + instr2_price
-        elif spread_operator == '-':
-            spread_price = instr1_price - instr2_price
-        else:
-            raise ValueError(f"Invalid spread operator: {spread_operator}")
-        return spread_price
-
-    async def get_spread_price(self, instr1_price: float, instr2_price: float) -> float:
-        spread_operator = config['trading_parameters']['spread_operator']
-
-        if spread_operator == '/':
-            spread_price = instr1_price / instr2_price
-        elif spread_operator == '*':
-            spread_price = instr1_price * instr2_price
-        elif spread_operator == '+':
-            spread_price = instr1_price + instr2_price
-        elif spread_operator == '-':
-            spread_price = instr1_price - instr2_price
-        else:
-            raise ValueError(f"Invalid spread operator: {spread_operator}")
-        return spread_price
-
-    # async def get_instruments_prices(self, grid_direction: str):
-
-    #     if self.grid_direction == GRID_DIRECTION_LONG:
-    #         instr1_price = (await self.conn.get_asset_price(
-    #             instrument_name=self.instr1_name))['best_ask']
-    #         instr2_price = (await self.conn.get_asset_price(
-    #             instrument_name=self.instr2_name))['best_bid']
-    #     elif self.grid_direction == GRID_DIRECTION_SHORT:
-    #         instr1_price = (await self.conn.get_asset_price(
-    #             instrument_name=self.instr1_name))['best_bid']
-    #         instr2_price = (await self.conn.get_asset_price(
-    #             instrument_name=self.instr2_name))['best_ask']
-
-    #     spread_price = await self.get_spread_price(
-    #         instr1_price=instr1_price,
-    #         instr2_price=instr2_price
-    #     )
-    #     return instr1_price, instr2_price, spread_price
-
-    # async def get_amounts(self):
-    #     amount1 = await self.get_asset_amount_usdc(instrument_name=self.instr1_name)
-    #     amount2 = await self.get_asset_amount_usdc(instrument_name=self.instr2_name)
-    #     return amount1, amount2
-
-    # async def calculate_local_grid(self):
-    #     if self.initial_spread_price is None:
-    #         raise ValueError('Initial spread price is not set')
-    #     local_grid_lows = [self.initial_spread_price - self.grid_step *
-    #                        i for i in range(1, self.orders_in_market+1)]
-    #     local_grid_highs = [self.initial_spread_price + self.grid_step * i
-    #                         for i in range(1, self.orders_in_market+1)]
-    #     local_grid = local_grid_lows + local_grid_highs
-    #     return local_grid

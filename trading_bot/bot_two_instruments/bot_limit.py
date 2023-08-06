@@ -4,14 +4,15 @@ import asyncio
 
 from telegram_bot import TelegramNotifier
 from connectors import dYdXConnection, DeribitConnection
-from utils.error_checkers import check_grid_direction
+# from utils.error_checkers import check_grid_direction
 
 from utils import *
 from constants import *
 
 from .base_bot_two_instruments import BaseTradingBotTwoInstruments
-from .grid_controller_two_instruments import GridControllerTwoInstruments
+# from .grid_controller_two_instruments import GridControllerTwoInstruments
 
+from .grid_two import GridControllerTwoInstruments
 
 config = load_config('config.yaml')
 
@@ -23,20 +24,19 @@ class TradingBotTwoInstrumentsLimitOrders(BaseTradingBotTwoInstruments):
                  telegram_bot: TelegramNotifier):
         super().__init__(conn=conn, telegram_bot=telegram_bot)
 
+        # we store here because here we create limit orders
         self.instr1_ndigits_rounding = NDIGITS_PRICES_ROUNDING[self.instr1_name]
         self.instr2_ndigits_rounding = NDIGITS_PRICES_ROUNDING[self.instr2_name]
 
-        # TODO: make it configurable
-        grid_ndigits_rounding = 8
+        self.grid_controller = GridControllerTwoInstruments()
 
-        self.grid_controller = GridControllerTwoInstruments(
-            ndigits_rounding=grid_ndigits_rounding)
-
-    async def check_limit_orders_are_fullfilled(self, limit_orders_hash) -> bool:
+    async def check_limit_orders_are_fullfilled(self, order1_id, order2_id) -> bool:
         pass
+        return False
 
-    async def check_take_profit_orders_are_fullfilled(self, take_profit_orders_hash) -> bool:
+    async def check_take_profit_orders_are_fullfilled(self, order1_id, order2_id) -> bool:
         pass
+        return False
 
     async def handle_two_limit_orders_executions(self):
         pass
@@ -57,9 +57,8 @@ class TradingBotTwoInstrumentsLimitOrders(BaseTradingBotTwoInstruments):
         # return (current_prices_instr1, current_prices_instr2, current_spread_price)
         pass
 
+    async def _prepare(self):
+        await self.conn.cancel_all_orders()
+
     async def run(self):
         pass
-
-
-if __name__ == '__main__':
-    pass
