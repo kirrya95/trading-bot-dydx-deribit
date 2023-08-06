@@ -53,17 +53,24 @@ async def test_update_take_profit(grid_controller):
     grid_direction = GridDirections.GRID_DIRECTION_LONG
 
     # grid = grid_controller
-    print('123')
 
     grid_controller.initialize_grid(spread_price, grid_size, grid_direction)
     # print(grid_controller.grid)
 
-    order1_id = 1
-    order2_id = 2
+    limit_order1_id = 1
+    limit_order2_id = 2
+
+    level = 99.7
 
     grid_controller.update_limit_order(
-        level=99.7, order1_id=order1_id, order2_id=order2_id)
+        level=level, order1_id=limit_order1_id, order2_id=limit_order2_id)
 
-    assert grid_controller.grid[99.7].limit_order_hash == hash(
-        (order1_id, order2_id))
-    print(grid_controller.grid[99.7])
+    assert grid_controller.grid[level].limit_order_hash == hash(
+        (limit_order1_id, limit_order2_id))
+
+    take_profit_order1_id = 3
+    take_profit_order2_id = 4
+
+    grid_controller.update_take_profit_order(
+        level=level, order1_id=take_profit_order1_id, order2_id=take_profit_order2_id)
+    print(grid_controller.grid[level])

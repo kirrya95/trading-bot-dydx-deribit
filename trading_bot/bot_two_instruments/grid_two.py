@@ -95,4 +95,8 @@ class GridControllerTwoInstruments(BaseGridController):
             raise Exception(
                 f'Level {level} is not reached!')
         if self.grid[level].limit_order_hash is None:
-            raise Exception(f'Limit order hash is None for level {level}!')
+            raise Exception(
+                f'Limit order hash is None for level {level}!')
+        if self.grid[level].take_profit_order_hash is not None:
+            raise Exception(
+                f'Take profit order hash is not None for level {level}!')
