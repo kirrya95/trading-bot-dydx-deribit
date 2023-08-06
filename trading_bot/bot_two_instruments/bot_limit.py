@@ -6,7 +6,6 @@ from telegram_bot import TelegramNotifier
 from connectors import dYdXConnection, DeribitConnection
 # from utils.error_checkers import check_grid_direction
 
-from utils import *
 from constants import *
 
 from .base_bot_two_instruments import BaseTradingBotTwoInstruments
@@ -14,7 +13,9 @@ from .base_bot_two_instruments import BaseTradingBotTwoInstruments
 
 from .grid_two import GridControllerTwoInstruments
 
-config = load_config('config.yaml')
+import utils
+
+config = utils.load_config('config.yaml')
 
 
 class TradingBotTwoInstrumentsLimitOrders(BaseTradingBotTwoInstruments):
@@ -48,17 +49,29 @@ class TradingBotTwoInstrumentsLimitOrders(BaseTradingBotTwoInstruments):
         pass
 
     async def get_instr_prices_and_spread(self):
-        # current_prices_instr1 = await self.conn.get_asset_price(instrument_name=self.instr1_name)
-        # current_prices_instr2 = await self.conn.get_asset_price(instrument_name=self.instr2_name)
+        prices_instr1 = utils.InstrPrices(**(await self.conn.get_asset_price(instrument_name=self.instr1_name)))
+        prices_instr2 = utils.InstrPrices(**(await self.conn.get_asset_price(instrument_name=self.instr2_name)))
 
-        # current_spread_price = await self.get_spread_price_from_two_instr_prices(instr1_prices=current_prices_instr1,
-        #                                                                          instr2_prices=current_prices_instr2,
-        #                                                                          grid_direction=self.anti_grid_direction)
-        # return (current_prices_instr1, current_prices_instr2, current_spread_price)
-        pass
+        spread_price = utils.calculate_spread_from_two_instr_prices(instr1_bid_ask=prices_instr1,
+                                                                          instr2_bid_ask=prices_instr2,
+                                                                          grid_direction=self.anti_grid_direction,
+                                                                          spread_operator=self.spread_operator)
+        return (prices_instr1, prices_instr2, spread_price)
 
     async def _prepare(self):
-        await self.conn.cancel_all_orders()
+        # sleep until start
+        await asyncio.sleep(await self.get_seconds_until_start())
+
+        await self.conn.cancel_all_orders(instrument_name=self.instr1_name, kind=self.kind1)
+        await self.conn.cancel_all_orders(instrument_name=self.instr2_name, kind=self.kind2)
+
+        (_, _, spread_price) = await self.get_instr_prices_and_spread()
+
+        # print(spread_price)
+        self.grid_controller.initialize_grid(
+            spread_price=spread_price, grid_direction=self.grid_direction)
 
     async def run(self):
-        pass
+
+        async with self.lock:
+            await self._prepare()

@@ -55,30 +55,30 @@ class BaseTradingBot(ABC):
     #     else:
     #         return False
 
-    async def tidy_instrument_amount(self,
-                                     instrument_name: str,
-                                     amount_in_usdc_to_have: float,
-                                     ):
+    # async def tidy_instrument_amount(self,
+    #                                  instrument_name: str,
+    #                                  amount_in_usdc_to_have: float,
+    #                                  ):
 
-        currency = await self.conn.get_currency_from_instrument(
-            instrument_name=instrument_name)
-        instrument_amount_usdc = await self.conn.get_position(currency=currency, instrument_name=instrument_name)
-        print(f"Current {instrument_name} amount: {instrument_amount_usdc}")
+    #     currency = await self.conn.get_currency_from_instrument(
+    #         instrument_name=instrument_name)
+    #     instrument_amount_usdc = await self.conn.get_position(currency=currency, instrument_name=instrument_name)
+    #     print(f"Current {instrument_name} amount: {instrument_amount_usdc}")
 
-        if instrument_amount_usdc < amount_in_usdc_to_have:
-            res = await self.conn.execute_market_order(
-                instrument_name=instrument_name,
-                amount=amount_in_usdc_to_have - instrument_amount_usdc,
-                side=OrderSides.ORDER_SIDE_BUY
-            )
-            return res
-        elif instrument_amount_usdc > amount_in_usdc_to_have:
-            res = await self.conn.execute_market_order(
-                instrument_name=instrument_name,
-                amount=instrument_amount_usdc - amount_in_usdc_to_have,
-                side=OrderSides.ORDER_SIDE_SELL
-            )
-            return res
+    #     if instrument_amount_usdc < amount_in_usdc_to_have:
+    #         res = await self.conn.execute_market_order(
+    #             instrument_name=instrument_name,
+    #             amount=amount_in_usdc_to_have - instrument_amount_usdc,
+    #             side=OrderSides.ORDER_SIDE_BUY
+    #         )
+    #         return res
+    #     elif instrument_amount_usdc > amount_in_usdc_to_have:
+    #         res = await self.conn.execute_market_order(
+    #             instrument_name=instrument_name,
+    #             amount=instrument_amount_usdc - amount_in_usdc_to_have,
+    #             side=OrderSides.ORDER_SIDE_SELL
+    #         )
+    #         return res
 
     # async def get_asset_amount_usdc(self, instrument_name: str):
     #     currency = await self.conn.get_currency_from_instrument(
@@ -86,29 +86,29 @@ class BaseTradingBot(ABC):
     #     amount = await self.conn.get_position(currency=currency, instrument_name=instrument_name)
     #     return amount
 
-    @check_side
-    async def get_size_to_trade(self, instr_name, side, kind):
+    # @check_side
+    # async def get_size_to_trade(self, instr_name, side, kind):
 
-        if kind == 'future':
-            size = config['trading_parameters']['order_size']
-        elif kind == DeribitAvailableKinds.SPOT:
-            if instr_name == DeribitSpotMarkets.ETH_BTC:
-                if side == OrderSides.ORDER_SIDE_BUY:
-                    price = (await self.conn.get_asset_price(DeribitSpotMarkets.ETH_USDC))['best_ask']
-                    print(f'Price: {price}')
-                    size = config['trading_parameters']['order_size'] / price
-                    return round(size, ndigits=NDIGITS_PRICES_ROUNDING[DeribitSpotMarkets.ETH_USDC])
-                elif side == OrderSides.ORDER_SIDE_SELL:
-                    price = (await self.conn.get_asset_price(DeribitSpotMarkets.BTC_USDC))['best_bid']
-                    print(f'Price: {price}')
-                    size = config['trading_parameters']['order_size'] / price
-                    return round(size, ndigits=NDIGITS_PRICES_ROUNDING[DeribitSpotMarkets.BTC_USDC])
-            else:
-                size = config['trading_parameters']['order_size'] / \
-                    self.current_instr_price
+    #     if kind == 'future':
+    #         size = config['trading_parameters']['order_size']
+    #     elif kind == DeribitAvailableKinds.SPOT:
+    #         if instr_name == DeribitSpotMarkets.ETH_BTC:
+    #             if side == OrderSides.ORDER_SIDE_BUY:
+    #                 price = (await self.conn.get_asset_price(DeribitSpotMarkets.ETH_USDC))['best_ask']
+    #                 print(f'Price: {price}')
+    #                 size = config['trading_parameters']['order_size'] / price
+    #                 return round(size, ndigits=NDIGITS_PRICES_ROUNDING[DeribitSpotMarkets.ETH_USDC])
+    #             elif side == OrderSides.ORDER_SIDE_SELL:
+    #                 price = (await self.conn.get_asset_price(DeribitSpotMarkets.BTC_USDC))['best_bid']
+    #                 print(f'Price: {price}')
+    #                 size = config['trading_parameters']['order_size'] / price
+    #                 return round(size, ndigits=NDIGITS_PRICES_ROUNDING[DeribitSpotMarkets.BTC_USDC])
+    #         else:
+    #             size = config['trading_parameters']['order_size'] / \
+    #                 self.current_instr_price
 
-        else:
-            raise ValueError('Incorrect kind. Should be either future or spot')
+    #     else:
+    #         raise ValueError('Incorrect kind. Should be either future or spot')
 
         return round(size, ndigits=NDIGITS_PRICES_ROUNDING[instr_name])
 

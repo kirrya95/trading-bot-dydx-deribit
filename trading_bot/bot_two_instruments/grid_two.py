@@ -24,21 +24,24 @@ class GridControllerTwoInstruments(BaseGridController):
         super().__init__()
 
         # TODO: change this
-        self.orders_in_market = 5
-        self.max_orders_amount = 10
+        # for two instruments, we don't need 'orders_in_market' parameter
+        # self.orders_in_market = 5
+        self.max_orders_amount = config['trading_parameters']['max_orders_amount']
         self.grid: dict[int, GridEntry] = {}
         # warning: this dict potentially can be very large
         self.hash_to_orders = {}
 
-    @check_grid_direction
-    def initialize_grid(self, instr_price: float, grid_size: int, grid_direction: str):
+    def initialize_grid(self, spread_price: float, grid_direction: str):
+        grid_size = self.max_orders_amount
+        level: float
+        take_profit_level: float
         for i in range(grid_size):
             if grid_direction == GridDirections.GRID_DIRECTION_LONG:
-                level = round(instr_price - self.grid_step *
+                level = round(spread_price - self.grid_step *
                               (1+i), ndigits=self.grid_ndigits_rounding)
                 take_profit_level = level + self.grid_step
             else:
-                level = round(instr_price + self.grid_step *
+                level = round(spread_price + self.grid_step *
                               (1+i), ndigits=self.grid_ndigits_rounding)
                 take_profit_level = level - self.grid_step
 

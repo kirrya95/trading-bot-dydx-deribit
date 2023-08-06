@@ -15,7 +15,7 @@ from constants import GridDirections
 
 @pytest.fixture
 def grid_controller():
-    controller = GridControllerTwoInstruments(ndigits_rounding=8)
+    controller = GridControllerTwoInstruments()
     controller.grid_step = 0.1  # Set a sample grid step
     return controller
 
@@ -29,13 +29,14 @@ async def test_initialize_grid(grid_controller):
     # grid = grid_controller
     print('123')
 
-    grid_controller.initialize_grid(spread_price, grid_size, grid_direction)
+    grid_controller.initialize_grid(spread_price, grid_direction)
     print(grid_controller.grid)
 
     # expected_levels = [100.1, 100.2, 100.3, 100.4, 100.5]
-    expected_levels = [99.9, 99.8, 99.7, 99.6, 99.5]
+    expected_levels = [
+        100 - grid_controller.grid_step * i for i in range(1, 11)]
     for i, level, in enumerate(grid_controller.grid.keys()):
-        print(i, level)
+        # print(i, level)
         assert level == expected_levels[i]
         assert not grid_controller.grid[level].reached
 
@@ -56,7 +57,7 @@ async def test_update_take_profit(grid_controller):
 
     # grid = grid_controller
 
-    grid_controller.initialize_grid(spread_price, grid_size, grid_direction)
+    grid_controller.initialize_grid(spread_price, grid_direction)
     # print(grid_controller.grid)
 
     limit_order1_id = 1
