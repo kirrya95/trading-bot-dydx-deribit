@@ -1,3 +1,4 @@
+import typing as tp
 from utils import GridDirections
 
 
@@ -37,7 +38,7 @@ def get_opposite_side(side):
         raise ValueError('Invalid grid direction')
 
 
-def get_side_price_from_dict_prices(instr_prices, side):
+def get_side_price_from_dict_prices(instr_prices: dict, side: tp.Literal['buy', 'sell']):
     if 'best_ask' not in instr_prices.keys() or 'best_bid' not in instr_prices.keys():
         raise ValueError(
             'Invalid dictionary with prices. Should contain keys "best_ask" and "best_bid"')

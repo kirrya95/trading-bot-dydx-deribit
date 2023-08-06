@@ -14,6 +14,7 @@ from .base_bot_two_instruments import BaseTradingBotTwoInstruments
 from .grid_two import GridControllerTwoInstruments, GridEntry
 
 import utils
+from utils import trade_utils, InstrPrices
 
 config = utils.load_config('config.yaml')
 
@@ -31,26 +32,48 @@ class TradingBotTwoInstrumentsLimitOrders(BaseTradingBotTwoInstruments):
 
         self.grid_controller = GridControllerTwoInstruments()
 
-    async def check_limit_orders_are_fullfilled(self, order1_id, order2_id) -> bool:
+    async def check_batch_orders_fullfilled(self, order1_id, order2_id) -> bool:
         pass
         return False
 
-    async def check_take_profit_orders_are_fullfilled(self, order1_id, order2_id) -> bool:
-        pass
-        return False
-
-    async def handle_two_limit_orders_executions(self):
+    async def handle_batch_orders_executions(self, order1_id: str, order2_id: str):
         pass
 
-    async def create_batch_limit_order(self,
-                                       instr1_amount, instr2_amount,
-                                       prices_instr1, prices_instr2,
-                                       instr1_side, instr2_side):
-        pass
+    async def create_batch_limit_orders(self,
+                                       prices_instr1: InstrPrices,
+                                       prices_instr2: InstrPrices):
+        instr1_amount = trade_utils.get_size_to_trade(instr_name=self.instr1_name,
+                                                      instr_prices=prices_instr1,
+                                                      direction=self.grid_direction,
+                                                      kind=self.kind1,
+                                                      config_size=self.order_size)
+        instr2_amount = trade_utils.get_size_to_trade(instr_name=self.instr2_name,
+                                                      instr_prices=prices_instr2,
+                                                      direction=self.anti_grid_direction,
+                                                      kind=self.kind2,
+                                                      config_size=self.order_size)
+        print('create_batch_limit_orders')
+        print('instr 1 amount', instr1_amount)
+        print('instr 2 amount', instr2_amount)
 
-    async def get_instr_prices_and_spread(self) -> tp.Tuple[utils.InstrPrices, utils.InstrPrices, float]:
-        prices_instr1 = utils.InstrPrices(**(await self.conn.get_asset_price(instrument_name=self.instr1_name)))
-        prices_instr2 = utils.InstrPrices(**(await self.conn.get_asset_price(instrument_name=self.instr2_name)))
+        # mean price because we want to increase probability that the orders will be executed
+        price1 = (prices_instr1.best_bid + prices_instr1.best_ask) / 2
+        price2 = (prices_instr2.best_bid + prices_instr2.best_ask) / 2
+
+        order1_id = await self.conn.create_limit_order(instrument_name=self.instr1_name,
+                                                       amount=instr1_amount,
+                                                       price=price1,
+                                                       action=self.grid_direction)
+        order2_id = await self.conn.create_limit_order(instrument_name=self.instr2_name,
+                                                       amount=instr2_amount,
+                                                       price=price2,
+                                                       action=self.anti_grid_direction)
+        await self.handle_two_limit_orders_executions(order1_id=order1_id,
+                                                      order2_id=order2_id)
+
+    async def get_instr_prices_and_spread(self) -> tp.Tuple[InstrPrices, InstrPrices, float]:
+        prices_instr1 = InstrPrices(**(await self.conn.get_asset_price(instrument_name=self.instr1_name)))
+        prices_instr2 = InstrPrices(**(await self.conn.get_asset_price(instrument_name=self.instr2_name)))
 
         spread_price = utils.calculate_spread_from_two_instr_prices(instr1_bid_ask=prices_instr1,
                                                                     instr2_bid_ask=prices_instr2,
@@ -80,17 +103,16 @@ class TradingBotTwoInstrumentsLimitOrders(BaseTradingBotTwoInstruments):
             async with self.lock:
                 # check total take profit. If reached, then bot stops running
                 await self.check_total_take_profit()
-                break
 
                 (instr1_bid_ask, instr2_bid_ask, spread_price) = await self.get_instr_prices_and_spread()
 
-                # if self.grid_direction == GridDirections.GRID_DIRECTION_LONG:
-                #     for (level, level_info) in self.grid_controller.grid.items():
-                #         if (level_info.reached == False) and (level >= spread_price):
-                #             # level is reached
-                #             pass
-                #         elif (level_info.reached == True) and (level_info.take_profit_level <= spread_price):
-                #             # it's time to execute take profit limit order and clear grid level
-                #             pass
+                if self.grid_direction == GridDirections.GRID_DIRECTION_LONG:
+                    for (level, level_info) in self.grid_controller.grid.items():
+                        if (level_info.reached == False) and (level >= spread_price):
+                            # level is reached
+                            pass
+                        elif (level_info.reached == True) and (level_info.take_profit_level <= spread_price):
+                            # it's time to execute take profit limit order and clear grid level
+                            pass
 
             await asyncio.sleep(1)

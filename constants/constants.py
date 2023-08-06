@@ -11,6 +11,14 @@ NDIGITS_PRICES_ROUNDING = {
     DeribitSpotMarkets.BTC_USDC: 4
 }
 
+NDIGITS_AMOUNTS_ROUNDING = {
+    DeribitPerpetualMarkets.BTC_PERPETUAL: 4,
+    DeribitPerpetualMarkets.ETH_PERPETUAL: 4,
+    DeribitSpotMarkets.ETH_BTC: 4,
+    DeribitSpotMarkets.ETH_USDC: 4,
+    DeribitSpotMarkets.BTC_USDC: 4
+}
+
 # ------------ Order Side ------------
 
 

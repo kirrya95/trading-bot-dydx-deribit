@@ -17,8 +17,7 @@ def check_operator(operator: str):
 def calculate_spread_from_two_instr_prices(instr1_bid_ask: InstrPrices,
                                            instr2_bid_ask: InstrPrices,
                                            spread_operator: str,
-                                           grid_direction: tp.Union[GridDirections.GRID_DIRECTION_LONG,
-                                                                    GridDirections.GRID_DIRECTION_SHORT]) -> float:
+                                           grid_direction: GridDirections) -> float:
     check_operator(spread_operator)
 
     if grid_direction == GridDirections.GRID_DIRECTION_LONG:

@@ -25,7 +25,7 @@ class BaseTradingBot(ABC):
         self.conn = conn
         self.telegram_bot = telegram_bot
         self.platform = config['trading_parameters']['platform']
-        self.size = config['trading_parameters']['order_size']
+        self.order_size = config['trading_parameters']['order_size']
         self.grid_step = config['trading_parameters']['grid_step']
         self.take_profit_grid_delta = config['trading_parameters']['take_profit_grid_delta']
         self.grid_direction = config['trading_parameters']['grid_direction']
@@ -111,7 +111,7 @@ class BaseTradingBot(ABC):
     #     else:
     #         raise ValueError('Incorrect kind. Should be either future or spot')
 
-    #    return round(size, ndigits=NDIGITS_PRICES_ROUNDING[instr_name])
+    #     return round(size, ndigits=NDIGITS_PRICES_ROUNDING[instr_name])
 
     async def send_strategy_info(self):
         instr1_name = config['trading_parameters']['instrument_1']
