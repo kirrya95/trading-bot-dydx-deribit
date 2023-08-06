@@ -54,9 +54,13 @@ class GridControllerTwoInstruments(BaseGridController):
             )
 
     def clear_level(self, level: float):
-        self.grid[level].reached = False
-        self.grid[level].limit_order_hash = None
-        self.grid[level].take_profit_order_hash = None
+        # clearing in this way, to ensure error if GridEntry attributes are changed
+        self.grid[level] = GridEntry(
+            take_profit_level=self.grid[level].take_profit_level,
+            reached=False,
+            limit_order_hash=None,
+            take_profit_order_hash=None
+        )
 
     def update_limit_order(self, level: float, order1_id: int, order2_id: int):
         # check that 'reached' attr is False, and limit order hash is None
