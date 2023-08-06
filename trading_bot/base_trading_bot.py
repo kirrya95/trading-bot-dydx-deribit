@@ -27,7 +27,7 @@ class BaseTradingBot(ABC):
         self.platform = config['trading_parameters']['platform']
         self.size = config['trading_parameters']['order_size']
         self.grid_step = config['trading_parameters']['grid_step']
-        self.take_profit_step = config['trading_parameters']['take_profit_spread_delta']
+        self.take_profit_grid_delta = config['trading_parameters']['take_profit_grid_delta']
         self.grid_direction = config['trading_parameters']['grid_direction']
         self.start_timestamp = to_utc_timestamp(
             config['trading_parameters']['start_datetime'])
@@ -35,7 +35,8 @@ class BaseTradingBot(ABC):
         self.max_orders_amount = config['trading_parameters']['max_orders_amount']
 
         self.start_deposit = config['trading_parameters']['start_deposit']
-        self.initial_usdc_deposit_on_wallet = None
+        self.take_profit_deposit = config['trading_parameters']['take_profit_deposit']
+        # self.initial_usdc_deposit_on_wallet = None
 
         self.anti_grid_direction = GridDirections.GRID_DIRECTION_SHORT if self.grid_direction == GridDirections.GRID_DIRECTION_LONG else GridDirections.GRID_DIRECTION_LONG
 
@@ -110,7 +111,7 @@ class BaseTradingBot(ABC):
     #     else:
     #         raise ValueError('Incorrect kind. Should be either future or spot')
 
-        return round(size, ndigits=NDIGITS_PRICES_ROUNDING[instr_name])
+    #    return round(size, ndigits=NDIGITS_PRICES_ROUNDING[instr_name])
 
     async def send_strategy_info(self):
         instr1_name = config['trading_parameters']['instrument_1']

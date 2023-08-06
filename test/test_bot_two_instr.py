@@ -39,7 +39,7 @@ async def fixture_bot():
 
 
 @pytest.mark.asyncio()
-async def test_create_batch_limit_order(fixture_bot):
+async def test_prepare(fixture_bot):
     instr1_amount = 0.1
     instr2_amount = 0.1
     prices_instr1 = {'bid': 100.0, 'ask': 100.1}
@@ -56,4 +56,4 @@ async def test_create_batch_limit_order(fixture_bot):
     await bot.conn.connection.close()
 
     print('bot.grid_controller.grid')
-    print(bot.grid_controller.grid)
+    # print(bot.grid_controller.grid)

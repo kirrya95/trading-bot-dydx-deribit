@@ -14,7 +14,7 @@ config = load_config('config.yaml')
 @dataclass
 class GridEntry:
     reached: bool
-    take_profit_level: int
+    take_profit_level: float
     limit_order_hash: tp.Union[str, None]
     take_profit_order_hash: tp.Union[str, None]
 
@@ -103,3 +103,8 @@ class GridControllerTwoInstruments(BaseGridController):
         if self.grid[level].take_profit_order_hash is not None:
             raise Exception(
                 f'Take profit order hash is not None for level {level}!')
+
+    def _check_gridSizeNotExceeded(self):
+        if len(self.grid) >= self.max_orders_amount:
+            raise Exception(
+                f'Grid size exceeded! Current grid size: {len(self.grid)}')

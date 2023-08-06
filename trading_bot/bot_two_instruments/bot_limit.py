@@ -11,7 +11,7 @@ from constants import *
 from .base_bot_two_instruments import BaseTradingBotTwoInstruments
 # from .grid_controller_two_instruments import GridControllerTwoInstruments
 
-from .grid_two import GridControllerTwoInstruments
+from .grid_two import GridControllerTwoInstruments, GridEntry
 
 import utils
 
@@ -48,14 +48,14 @@ class TradingBotTwoInstrumentsLimitOrders(BaseTradingBotTwoInstruments):
                                        instr1_side, instr2_side):
         pass
 
-    async def get_instr_prices_and_spread(self):
+    async def get_instr_prices_and_spread(self) -> tp.Tuple[utils.InstrPrices, utils.InstrPrices, float]:
         prices_instr1 = utils.InstrPrices(**(await self.conn.get_asset_price(instrument_name=self.instr1_name)))
         prices_instr2 = utils.InstrPrices(**(await self.conn.get_asset_price(instrument_name=self.instr2_name)))
 
         spread_price = utils.calculate_spread_from_two_instr_prices(instr1_bid_ask=prices_instr1,
-                                                                          instr2_bid_ask=prices_instr2,
-                                                                          grid_direction=self.anti_grid_direction,
-                                                                          spread_operator=self.spread_operator)
+                                                                    instr2_bid_ask=prices_instr2,
+                                                                    grid_direction=self.anti_grid_direction,
+                                                                    spread_operator=self.spread_operator)
         return (prices_instr1, prices_instr2, spread_price)
 
     async def _prepare(self):
@@ -67,11 +67,30 @@ class TradingBotTwoInstrumentsLimitOrders(BaseTradingBotTwoInstruments):
 
         (_, _, spread_price) = await self.get_instr_prices_and_spread()
 
-        # print(spread_price)
+        print()
+        print(spread_price)
+
         self.grid_controller.initialize_grid(
             spread_price=spread_price, grid_direction=self.grid_direction)
 
     async def run(self):
+        await self._prepare()
 
-        async with self.lock:
-            await self._prepare()
+        while True:
+            async with self.lock:
+                # check total take profit. If reached, then bot stops running
+                await self.check_total_take_profit()
+                break
+
+                (instr1_bid_ask, instr2_bid_ask, spread_price) = await self.get_instr_prices_and_spread()
+
+                # if self.grid_direction == GridDirections.GRID_DIRECTION_LONG:
+                #     for (level, level_info) in self.grid_controller.grid.items():
+                #         if (level_info.reached == False) and (level >= spread_price):
+                #             # level is reached
+                #             pass
+                #         elif (level_info.reached == True) and (level_info.take_profit_level <= spread_price):
+                #             # it's time to execute take profit limit order and clear grid level
+                #             pass
+
+            await asyncio.sleep(1)
