@@ -54,7 +54,7 @@ class GridControllerTwoInstruments(BaseGridController):
             )
 
     def clear_level(self, level: float):
-        # clearing in this way, to ensure error if GridEntry attributes are changed
+        # clearing in this way, we ensure having error if GridEntry attributes are changed
         self.grid[level] = GridEntry(
             take_profit_level=self.grid[level].take_profit_level,
             reached=False,

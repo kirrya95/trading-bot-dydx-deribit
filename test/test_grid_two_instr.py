@@ -32,11 +32,12 @@ async def test_initialize_grid(grid_controller):
     grid_controller.initialize_grid(spread_price, grid_size, grid_direction)
     print(grid_controller.grid)
 
-    expected_levels = [100.1, 100.2, 100.3, 100.4, 100.5]
-    for i, level_info in grid_controller.grid.items():
-        print(level_info.reached)
-        # assert level_info["level"] == expected_levels[i]
-        # assert not level_info["reached"]
+    # expected_levels = [100.1, 100.2, 100.3, 100.4, 100.5]
+    expected_levels = [99.9, 99.8, 99.7, 99.6, 99.5]
+    for i, level, in enumerate(grid_controller.grid.keys()):
+        print(i, level)
+        assert level == expected_levels[i]
+        assert not grid_controller.grid[level].reached
 
 
 @pytest.mark.asyncio
@@ -89,3 +90,8 @@ async def test_update_take_profit(grid_controller):
 
     print(take_profit_order1_id)
 
+
+@pytest.mark.asyncio
+async def test_running_window(grid_controller):
+    # should not add new orders if exceeded max amount
+    pass
