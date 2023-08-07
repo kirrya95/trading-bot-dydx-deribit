@@ -143,6 +143,7 @@ class TradingBotTwoInstrumentsLimitOrders(BaseTradingBotTwoInstruments):
                         await self.conn.cancel_order(order_id=batchLimitOrderInputs.order2_id)
                         handleBatchOrdersExecutionOutput.status = False
                         break
+                await asyncio.sleep(0.5)
 
         except Exception as err:
             await self.telegram_bot.send_message(f"{err}")
