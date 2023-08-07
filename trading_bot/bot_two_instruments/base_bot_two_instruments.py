@@ -63,6 +63,7 @@ class BaseTradingBotTwoInstruments(BaseTradingBot):
         currency2 = await self.conn.get_currency_from_instrument(instrument_name=self.instr2_name)
         amount1 = await self.conn.get_position(currency=currency1, instrument_name=self.instr1_name)
         amount2 = await self.conn.get_position(currency=currency2, instrument_name=self.instr2_name)
+        
         total_portfolio_value = price1 * amount1 + price2 * amount2
         # print(amount1, amount2)
         # print(price1, price2)
@@ -74,7 +75,7 @@ class BaseTradingBotTwoInstruments(BaseTradingBot):
         if self.start_deposit is None:
             raise ValueError('start_deposit is not specified in config.yaml')
         current_portfolio_value = await self.calculate_portfolio_value()
-        # print(current_portfolio_value)
+        print(current_portfolio_value)
         if current_portfolio_value >= self.start_deposit * (1 + self.take_profit_deposit):
             await self.telegram_bot.send_message('Total take profit is reached, bot is stopped')
             await self.conn.cancel_all_orders(instrument_name=self.instr1_name)

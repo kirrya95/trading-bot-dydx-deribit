@@ -1,3 +1,3 @@
 from .base_bot_two_instruments import BaseTradingBotTwoInstruments
 from .bot_market_orders import TradingBotTwoInstrumentsMarketOrders
-from .bot_limit_orders import TradingBotTwoInstrumentsLimitOrders
+# from .old_bot_limit_orders import TradingBotTwoInstrumentsLimitOrders

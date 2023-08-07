@@ -1,6 +1,6 @@
 import typing as tp
 from constants import DeribitAvailableKinds, DeribitSpotMarkets
-from constants import GridDirections, OrderSides, NDIGITS_AMOUNTS_ROUNDING
+from constants import GridDirections, OrderSides, NDIGITS_AMOUNTS_ROUNDING, NDIGITS_PRICES_ROUNDING
 from utils import InstrPrices
 
 
@@ -38,3 +38,7 @@ def get_size_to_trade(instr_name: str,
                 return round(size, ndigits=NDIGITS_AMOUNTS_ROUNDING[DeribitSpotMarkets.ETH_USDC])
 
     raise ValueError('Incorrect kind. Should be either future or spot')
+
+
+def round_price(price, instr_name):
+    return round(price, ndigits=NDIGITS_PRICES_ROUNDING[instr_name])

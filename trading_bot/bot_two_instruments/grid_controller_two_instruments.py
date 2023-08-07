@@ -1,75 +1,110 @@
 from trading_bot.base_grid_controller import BaseGridController
+import typing as tp
 from copy import deepcopy
+from dataclasses import dataclass
 
 from utils import load_config, to_utc_timestamp
+from utils.error_checkers import check_grid_direction
+
 from constants import *
 
 config = load_config('config.yaml')
 
 
+@dataclass
+class GridEntry:
+    reached: bool
+    take_profit_level: float
+    limit_order_hash: tp.Union[str, None]
+    take_profit_order_hash: tp.Union[str, None]
+
+
 class GridControllerTwoInstruments(BaseGridController):
-    def __init__(self, ndigits_rounding: int):
-        super().__init__(ndigits_rounding=ndigits_rounding)
+    def __init__(self):
+        super().__init__()
 
-        self.last_achieved_level = None
-        self.pending_limit_orders = {}
-        self.pending_take_profit_orders = {}
-        self.limit_to_take_profit_orders = {}  # limit -> take profit
-        self.take_profit_to_limit_orders = {}  # take profit -> limit
+        # TODO: change this
+        # for two instruments, we don't need 'orders_in_market' parameter
+        # self.orders_in_market = 5
+        self.max_orders_amount = config['trading_parameters']['max_orders_amount']
+        self.grid: dict[int, GridEntry] = {}
+        # warning: this dict potentially can be very large
+        self.hash_to_orders = {}
 
-    async def update_last_achieved_level(self, level: float):
-        self.last_achieved_level = level
+    def initialize_grid(self, spread_price: float, grid_direction: str):
+        grid_size = self.max_orders_amount
+        level: float
+        take_profit_level: float
+        for i in range(grid_size):
+            if grid_direction == GridDirections.GRID_DIRECTION_LONG:
+                level = round(spread_price - self.grid_step *
+                              (1+i), ndigits=self.grid_ndigits_rounding)
+                take_profit_level = level + self.grid_step
+            else:
+                level = round(spread_price + self.grid_step *
+                              (1+i), ndigits=self.grid_ndigits_rounding)
+                take_profit_level = level - self.grid_step
 
-    async def update_pending_limit_order_info(self, instr1_order_id: str, instr1_order_info: dict,
-                                              instr2_order_id: str, instr2_order_info: dict):
-        key = await self.get_orders_hash(instr1_order_id, instr2_order_id)
-        self.pending_limit_orders[key][instr1_order_id] = instr1_order_info
-        self.pending_limit_orders[key][instr2_order_id] = instr2_order_info
+            self.grid[level] = GridEntry(
+                take_profit_level=take_profit_level,
+                reached=False,
+                limit_order_hash=None,
+                take_profit_order_hash=None
+            )
 
-    async def del_pending_limit_order_info(self, instr1_order_id: str, instr2_order_id: str):
-        key = await self.get_orders_hash(instr1_order_id, instr2_order_id)
-        self.pending_limit_orders[key].pop(instr1_order_id)
-        self.pending_limit_orders[key].pop(instr2_order_id)
-        if not self.pending_limit_orders[key]:
-            self.pending_limit_orders.pop(key)
+    def clear_level(self, level: float):
+        # clearing in this way, we ensure having error if GridEntry attributes are changed
+        self.grid[level] = GridEntry(
+            take_profit_level=self.grid[level].take_profit_level,
+            reached=False,
+            limit_order_hash=None,
+            take_profit_order_hash=None
+        )
 
-    async def update_pending_take_profit_order_info(self, instr1_order_id: str, instr1_order_info: dict,
-                                                    instr2_order_id: str, instr2_order_info: dict):
-        key = hash((instr1_order_id, instr2_order_id))
-        self.pending_take_profit_orders[key][instr1_order_id] = instr1_order_info
-        self.pending_take_profit_orders[key][instr2_order_id] = instr2_order_info
+    def update_limit_order(self, level: float, order1_id: int, order2_id: int):
+        # check that 'reached' attr is False, and limit order hash is None
+        self._check_limitOrder(level)
 
-    async def del_pending_take_profit_order_info(self, instr1_order_id: str, instr2_order_id: str):
-        key = await self.get_orders_hash(instr1_order_id, instr2_order_id)
-        self.pending_take_profit_orders[key].pop(instr1_order_id)
-        self.pending_take_profit_orders[key].pop(instr2_order_id)
-        if not self.pending_take_profit_orders[key]:
-            self.pending_take_profit_orders.pop(key)
+        self.grid[level].limit_order_hash = self.calculate_hash(
+            order1_id, order2_id)
+        self.hash_to_orders[self.grid[level].limit_order_hash] = (
+            order1_id, order2_id)
+        self.grid[level].reached = True
 
-    ### GETTERS ###
+    def update_take_profit_order(self, level: float, order1_id: int, order2_id: int):
+        # check if level is reached and limit order hash is not None
+        self._check_takeProfitOrder(level)
 
-    @property
-    def current_grid(self):
-        print('last achieved level', self.last_achieved_level)
-        if self.last_achieved_level is None:
-            return self.initial_grid
-        index_of_last_achieved_level = self.initial_grid.index(
-            self.last_achieved_level)
-        return self.initial_grid[index_of_last_achieved_level + 1:]
+        take_profit_hash = self.calculate_hash(order1_id, order2_id)
+        self.grid[level].take_profit_order_hash = take_profit_hash
+        self.hash_to_orders[take_profit_hash] = (order1_id, order2_id)
 
-    async def get_pending_limit_orders(self):
-        return deepcopy(list(self.pending_limit_orders.keys()))
+    @staticmethod
+    def calculate_hash(order1_id: int, order2_id: int):
+        return hash((order1_id, order2_id))
 
-    async def get_pending_take_profit_orders(self):
-        return deepcopy(list(self.pending_take_profit_orders.keys()))
+    ### checkers ###
 
-    async def get_limit_orders_ids(self):
-        return deepcopy(list(self.limit_to_take_profit_orders.keys()))
+    def _check_limitOrder(self, level: float):
+        if self.grid[level].reached is True:
+            raise Exception(
+                f'Level {level} is already reached!')
+        if self.grid[level].limit_order_hash is not None:
+            raise Exception(
+                f'Limit order hash is not None for level {level}!')
 
-    async def get_take_profit_orders_ids(self):
-        return deepcopy(list(self.take_profit_to_limit_orders.keys()))
+    def _check_takeProfitOrder(self, level: float):
+        if self.grid[level].reached is False:
+            raise Exception(
+                f'Level {level} is not reached!')
+        if self.grid[level].limit_order_hash is None:
+            raise Exception(
+                f'Limit order hash is None for level {level}!')
+        if self.grid[level].take_profit_order_hash is not None:
+            raise Exception(
+                f'Take profit order hash is not None for level {level}!')
 
-    ### UTILS ###
-
-    async def get_orders_hash(self, instr1_limit, instr2_limit):
-        return hash((instr1_limit, instr2_limit))
+    def _check_gridSizeNotExceeded(self):
+        if len(self.grid) >= self.max_orders_amount:
+            raise Exception(
+                f'Grid size exceeded! Current grid size: {len(self.grid)}')

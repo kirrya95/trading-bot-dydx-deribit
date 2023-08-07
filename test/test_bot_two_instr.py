@@ -6,7 +6,7 @@ import asyncio
 from utils import *
 
 # from trading_bot.bot_two_instruments.grid_controller_two_instruments import GridControllerTwoInstruments
-from trading_bot.bot_two_instruments.bot_limit import TradingBotTwoInstrumentsLimitOrders
+from trading_bot.bot_two_instruments.bot_limit_orders import TradingBotTwoInstrumentsLimitOrders
 
 from constants import GridDirections
 
@@ -57,3 +57,5 @@ async def test_prepare(fixture_bot):
 
     print('bot.grid_controller.grid')
     # print(bot.grid_controller.grid)
+
+    
