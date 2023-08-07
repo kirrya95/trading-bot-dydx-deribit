@@ -227,11 +227,28 @@ class TradingBotTwoInstrumentsLimitOrders(BaseTradingBotTwoInstruments):
                                                                     order1_id=order1_id,
                                                                     order2_id=order2_id)
                             await self.telegram_bot.send_message(
-                                f'Created limit orders for level {level} with ids {order1_id} and {order2_id}')
+                                f'Created limit orders for level {level}. \n'
+                                f'Current spread price: {spread_price}. \n'
+                                f'Order1 price: {instr1_bid_ask.best_ask}, order2 price: {instr2_bid_ask.best_ask}')
 
                         elif (level_info.reached == True) and (level_info.take_profit_level <= spread_price):
                             # it's time to execute take profit limit order and clear grid level
-                            pass
+                            (order1_id, order2_id) = await self.create_batch_limit_orders(prices_instr1=instr1_bid_ask,
+                                                                                          prices_instr2=instr2_bid_ask,
+                                                                                          grid_order_type='take_profit')
+                            self.grid_controller.update_take_profit_order(level=level,
+                                                                          order1_id=order1_id,
+                                                                          order2_id=order2_id)
+                            await self.telegram_bot.send_message(
+                                f'Executed take profit orders for level {level}. \n'
+                                f'Take profit level: {level_info.take_profit_level}. \n'
+                                f'Current spread price: {spread_price}. \n'
+                                f'Order1 price: {instr1_bid_ask.best_bid}, order2 price: {instr2_bid_ask.best_ask}')
+                            # clear level
+                            self.grid_controller.clear_level(level=level)
+                else:
+                    # i.e. self.grid_direction == GridDirections.GRID_DIRECTION_SHORT
+                    pass
 
             await asyncio.sleep(1)
             # break
