@@ -10,6 +10,25 @@ class TelegramNotifier:
         self.bot = telegram.Bot(token=bot_token)
         self.chat_id = chat_id
 
+    async def simple_send_message(self, message):
+        account_name = config['account_name']
+        platform_name = config['trading_parameters']['platform']
+        mainnet = config['trading_parameters']['mainnet']
+        instr1_name = config['trading_parameters']['instrument_1']
+        instr2_name = config['trading_parameters']['instrument_2']
+        grid_direction = config['trading_parameters']['grid_direction']
+
+        message_header = f'*Account:* {account_name} \n' \
+                         f'*Platform*: {platform_name} \n' \
+                         f'*Mainnet*: {mainnet} \n' \
+                         f'*Instrument 1*: {instr1_name} \n' \
+                         f'*Instrument 2*: {instr2_name} \n' \
+                         f'*Grid direction*: {grid_direction} \n'
+        message = f'{message_header}\n \n{message}'
+        # print(message)
+        # print('-------')
+        await self.bot.send_message(chat_id=self.chat_id, text=message)
+
     async def send_message(self, message, parse_mode="Markdown"):
         account_name = config['account_name']
         platform_name = config['trading_parameters']['platform']

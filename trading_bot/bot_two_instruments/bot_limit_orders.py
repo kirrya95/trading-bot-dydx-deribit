@@ -146,7 +146,7 @@ class TradingBotTwoInstrumentsLimitOrders(BaseTradingBotTwoInstruments):
                 await asyncio.sleep(0.5)
 
         except Exception as err:
-            await self.telegram_bot.send_message(f"{err}")
+            await self.telegram_bot.simple_send_message(f"{err}")
         print('finished while cycle', order1_done, order2_done)
         print(handleBatchOrdersExecutionOutput)
 
