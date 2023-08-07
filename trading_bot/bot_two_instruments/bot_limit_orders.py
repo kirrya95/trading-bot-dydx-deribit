@@ -63,6 +63,8 @@ class TradingBotTwoInstrumentsLimitOrders(BaseTradingBotTwoInstruments):
         order2_done = False
         print('orders ids')
         print(batchLimitOrderInputs.order1_id, batchLimitOrderInputs.order2_id)
+        new_order1_id = batchLimitOrderInputs.order1_id
+        new_order2_id = batchLimitOrderInputs.order2_id
         while order1_done != True and order2_done != True:
             order1 = await self.conn.get_order(order_id=batchLimitOrderInputs.order1_id)
             order2 = await self.conn.get_order(order_id=batchLimitOrderInputs.order2_id)
@@ -74,38 +76,45 @@ class TradingBotTwoInstrumentsLimitOrders(BaseTradingBotTwoInstruments):
                 order1_done = True
             if order2_state == 'filled':
                 order2_done = True
-
+                await self.telegram_bot.send_message(
+                    f'''Both orders were filled as limit orders''')
             if order1_done == True and order2_done == False:
                 if self.calculate_spread_deviation(_spread_price=batchLimitOrderInputs.spread_price,
                                                    spread_price=spread_price) > self.two_instr_max_spread_price_deviation:
                     # we should cancel limit order and only then execute market order
-                    await self.conn.cancel_order(order_id=order2_id)
+                    await self.conn.cancel_order(order_id=new_order2_id)
                     order2 = await self.conn.execute_market_order(
                         instrument_name=self.instr2_name,
                         amount=batchLimitOrderInputs.instr2_amount,
                         side=batchLimitOrderInputs.instr2_side
                     )
-                    order2_id = order2['order_id']
+                    await self.telegram_bot.send_message(
+                        f'''Order {new_order2_id} was cancelled and market order was executed instead\n
+                        Order1 was filled as limit order''')
+                    new_order2_id = order2['order_id']
                     order2_done = True
             elif order1_done == False and order2_done == True:
                 if self.calculate_spread_deviation(_spread_price=batchLimitOrderInputs.spread_price,
                                                    spread_price=spread_price) > self.two_instr_max_spread_price_deviation:
                     # we should cancel limit order and only then execute market order
-                    await self.conn.cancel_order(order_id=order1_id)
+                    await self.conn.cancel_order(order_id=new_order1_id)
                     order1 = await self.conn.execute_market_order(
                         instrument_name=self.instr1_name,
                         amount=batchLimitOrderInputs.instr1_amount,
                         side=batchLimitOrderInputs.instr1_side
                     )
-                    order1_id = order1['order_id']
+                    await self.telegram_bot.send_message(
+                        f'''Order {new_order1_id} was cancelled and market order was executed instead\n
+                        Order2 was filled as limit order''')
+                    new_order1_id = order1['order_id']
                     order1_done = True
             else:
                 # TODO: handle other cases
                 pass
 
-            await asyncio.wait(1)
+            asyncio.wait(1)
 
-        return (order1_id, order2_id)
+        return (new_order1_id, new_order2_id)
 
     async def create_batch_limit_orders(self,
                                         prices_instr1: InstrPrices,
@@ -145,13 +154,13 @@ class TradingBotTwoInstrumentsLimitOrders(BaseTradingBotTwoInstruments):
             side1, side2 = side2, side1
 
         order1 = await self.conn.create_limit_order(instrument_name=self.instr1_name,
-                                                       amount=instr1_amount,
-                                                       price=price1,
-                                                       action=side1)
+                                                    amount=instr1_amount,
+                                                    price=price1,
+                                                    action=side1)
         order2 = await self.conn.create_limit_order(instrument_name=self.instr2_name,
-                                                       amount=instr2_amount,
-                                                       price=price2,
-                                                       action=side2)
+                                                    amount=instr2_amount,
+                                                    price=price2,
+                                                    action=side2)
         order1_id = order1['order_id']
         order2_id = order2['order_id']
         # these are possibly other orders, not the ones we just created
@@ -198,7 +207,6 @@ class TradingBotTwoInstrumentsLimitOrders(BaseTradingBotTwoInstruments):
 
     async def run(self):
         await self._prepare()
-
         while True:
             async with self.lock:
                 # check total take profit. If reached, then bot stops running
@@ -207,9 +215,10 @@ class TradingBotTwoInstrumentsLimitOrders(BaseTradingBotTwoInstruments):
 
                 (instr1_bid_ask, instr2_bid_ask, spread_price) = await self.get_instr_prices_and_spread()
                 if self.grid_direction == GridDirections.GRID_DIRECTION_LONG:
+                    print('spread price', spread_price)
                     for (level, level_info) in self.grid_controller.grid.items():
                         print(level, level_info)
-                        if (level_info.reached == False) and (level >= spread_price*0.995):
+                        if (level_info.reached == False) and (level >= spread_price):
                             print('create limit orders')
                             (order1_id, order2_id) = await self.create_batch_limit_orders(prices_instr1=instr1_bid_ask,
                                                                                           prices_instr2=instr2_bid_ask,
@@ -225,4 +234,4 @@ class TradingBotTwoInstrumentsLimitOrders(BaseTradingBotTwoInstruments):
                             pass
 
             await asyncio.sleep(1)
-            break
+            # break

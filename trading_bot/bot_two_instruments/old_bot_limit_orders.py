@@ -10,7 +10,7 @@ from utils import *
 from constants import *
 
 from .base_bot_two_instruments import BaseTradingBotTwoInstruments
-from .grid_controller_two_instruments import GridControllerTwoInstruments
+from .old_grid_controller_two_instruments import GridControllerTwoInstruments
 
 
 config = load_config('config.yaml')

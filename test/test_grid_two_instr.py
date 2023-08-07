@@ -6,7 +6,7 @@ import asyncio
 from utils import *
 
 # from trading_bot.bot_two_instruments.grid_controller_two_instruments import GridControllerTwoInstruments
-from trading_bot.bot_two_instruments.grid_two import GridControllerTwoInstruments
+from trading_bot.bot_two_instruments.grid_controller_two_instruments import GridControllerTwoInstruments
 
 from constants import GridDirections
 
