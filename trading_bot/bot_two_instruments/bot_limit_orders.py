@@ -102,7 +102,7 @@ class TradingBotTwoInstrumentsLimitOrders(BaseTradingBotTwoInstruments):
                             side=batchLimitOrderInputs.instr2_side
                         )
                         await self.telegram_bot.send_message(
-                            f'Order {new_order2_id} was cancelled and market order was executed instead'
+                            f'Order2 was cancelled and market order was executed instead.\n'
                             f'Order1 was filled as limit order')
                         new_order2_id = order2['order_id']
                         order2_done = True
@@ -122,7 +122,7 @@ class TradingBotTwoInstrumentsLimitOrders(BaseTradingBotTwoInstruments):
                             side=batchLimitOrderInputs.instr1_side
                         )
                         await self.telegram_bot.send_message(
-                            f'Order {new_order1_id} was cancelled and market order was executed instead'
+                            f'Order1 was cancelled and market order was executed instead.\n'
                             f'Order2 was filled as limit order')
                         new_order1_id = order1['order_id']
                         order1_done = True
