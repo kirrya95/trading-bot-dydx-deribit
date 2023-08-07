@@ -133,13 +133,11 @@ class TradingBotTwoInstrumentsLimitOrders(BaseTradingBotTwoInstruments):
                 else:
                     # keep waiting for filling
                     pass
-
+            if (order1_done and order2_done):
+                return HandleBatchOrdersExecutionOutput(status=True, orders=(new_order1_id, new_order2_id))
+            elif (order1_done == False and order2_done == False):
+                return HandleBatchOrdersExecutionOutput(status=False, orders=(new_order1_id, new_order2_id))
             await asyncio.sleep(1)
-
-        if (order1_done and order2_done):
-            return HandleBatchOrdersExecutionOutput(status=True, orders=(new_order1_id, new_order2_id))
-        elif (order1_done == False and order2_done == False):
-            return HandleBatchOrdersExecutionOutput(status=False, orders=(new_order1_id, new_order2_id))
 
     async def create_batch_limit_orders(self,
                                         prices_instr1: InstrPrices,
