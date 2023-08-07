@@ -34,6 +34,13 @@ class BatchLimitOrderInputs:
     instr2_side: str
 
 
+@dataclass
+class HandleBatchOrdersExecutionOutput:
+    status: bool
+    order1_id: str
+    order2_id: str
+
+
 class TradingBotTwoInstrumentsLimitOrders(BaseTradingBotTwoInstruments):
     def __init__(self,
                  conn: tp.Union[DeribitConnection,
@@ -56,7 +63,7 @@ class TradingBotTwoInstrumentsLimitOrders(BaseTradingBotTwoInstruments):
         return abs((_spread_price - spread_price) / _spread_price)
 
     async def handle_batch_orders_executions(self,
-                                             batchLimitOrderInputs: BatchLimitOrderInputs,):
+                                             batchLimitOrderInputs: BatchLimitOrderInputs) -> HandleBatchOrdersExecutionOutput:
         # TODO: add check() that order1.side == side(grid_direction)
         # currently we assume that order1.side == side(grid_direction) and order2.side == side(anti_grid_direction)
         order1_done = False
@@ -72,13 +79,16 @@ class TradingBotTwoInstrumentsLimitOrders(BaseTradingBotTwoInstruments):
             order1_state = order1['order_state']
             order2_state = order2['order_state']
             (_, _, spread_price) = await self.get_instr_prices_and_spread()
+
             if order1_state == 'filled':
                 order1_done = True
             if order2_state == 'filled':
                 order2_done = True
+
+            if order1_done and order2_done:
                 await self.telegram_bot.send_message(
                     f'''Both orders were filled as limit orders''')
-            if order1_done == True and order2_done == False:
+            elif order1_done == True and order2_done == False:
                 if self.calculate_spread_deviation(_spread_price=batchLimitOrderInputs.spread_price,
                                                    spread_price=spread_price) > self.two_instr_max_spread_price_deviation:
                     # we should cancel limit order and only then execute market order
@@ -93,6 +103,9 @@ class TradingBotTwoInstrumentsLimitOrders(BaseTradingBotTwoInstruments):
                         Order1 was filled as limit order''')
                     new_order2_id = order2['order_id']
                     order2_done = True
+                else:
+                    # keep waiting for filling
+                    pass
             elif order1_done == False and order2_done == True:
                 if self.calculate_spread_deviation(_spread_price=batchLimitOrderInputs.spread_price,
                                                    spread_price=spread_price) > self.two_instr_max_spread_price_deviation:
@@ -108,18 +121,30 @@ class TradingBotTwoInstrumentsLimitOrders(BaseTradingBotTwoInstruments):
                         Order2 was filled as limit order''')
                     new_order1_id = order1['order_id']
                     order1_done = True
-            else:
-                # TODO: handle other cases
-                pass
+                else:
+                    # keep waiting for filling
+                    pass
+            else:  # i.e order1_done == False and order2_done == False
+                if self.calculate_spread_deviation(_spread_price=batchLimitOrderInputs.spread_price,
+                                                   spread_price=spread_price) > self.two_instr_max_spread_price_deviation:
+                    await self.conn.cancel_order(order_id=new_order1_id)
+                    await self.conn.cancel_order(order_id=new_order2_id)
+                    break
+                else:
+                    # keep waiting for filling
+                    pass
 
             asyncio.wait(1)
 
-        return (new_order1_id, new_order2_id)
+        if (order1_done and order2_done):
+            return HandleBatchOrdersExecutionOutput(**{"status": True, "orders": (new_order1_id, new_order2_id)})
+        elif (order1_done == False and order2_done == False):
+            return HandleBatchOrdersExecutionOutput(**{"status": False, "orders": (new_order1_id, new_order2_id)})
 
     async def create_batch_limit_orders(self,
                                         prices_instr1: InstrPrices,
                                         prices_instr2: InstrPrices,
-                                        grid_order_type: tp.Literal['limit', 'take_profit']):
+                                        grid_order_type: tp.Literal['limit', 'take_profit']) -> HandleBatchOrdersExecutionOutput:
         instr1_amount = trade_utils.get_size_to_trade(instr_name=self.instr1_name,
                                                       instr_prices=prices_instr1,
                                                       direction=self.grid_direction,
@@ -164,7 +189,7 @@ class TradingBotTwoInstrumentsLimitOrders(BaseTradingBotTwoInstruments):
         order1_id = order1['order_id']
         order2_id = order2['order_id']
         # these are possibly other orders, not the ones we just created
-        (order1_id, order2_id) = await self.handle_batch_orders_executions(
+        handleBatchOrdersExecutionOutput = await self.handle_batch_orders_executions(
             batchLimitOrderInputs=BatchLimitOrderInputs(
                 order1_id=order1_id,
                 order2_id=order2_id,
@@ -176,9 +201,10 @@ class TradingBotTwoInstrumentsLimitOrders(BaseTradingBotTwoInstruments):
                 instr1_side=side1,
                 instr2_side=side2
             ))
-        print('order1_id', order1_id)
-        print('order2_id', order2_id)
-        return (order1_id, order2_id)
+        print('status', handleBatchOrdersExecutionOutput.status)
+        print('order1_id', handleBatchOrdersExecutionOutput.order1_id)
+        print('order2_id', handleBatchOrdersExecutionOutput.order2_id)
+        return handleBatchOrdersExecutionOutput
 
     async def get_instr_prices_and_spread(self) -> tp.Tuple[InstrPrices, InstrPrices, float]:
         prices_instr1 = InstrPrices(**(await self.conn.get_asset_price(instrument_name=self.instr1_name)))
@@ -221,12 +247,17 @@ class TradingBotTwoInstrumentsLimitOrders(BaseTradingBotTwoInstruments):
                     if self.grid_direction == GridDirections.GRID_DIRECTION_LONG and (level_info.reached == False) and (level >= spread_price) or \
                             self.grid_direction == GridDirections.GRID_DIRECTION_SHORT and (level_info.reached == False) and (level <= spread_price):
                         print('creating limit orders...')
-                        (order1_id, order2_id) = await self.create_batch_limit_orders(prices_instr1=instr1_bid_ask,
-                                                                                      prices_instr2=instr2_bid_ask,
-                                                                                      grid_order_type='limit')
+                        handleBatchOrdersExecutionOutput = await self.create_batch_limit_orders(prices_instr1=instr1_bid_ask,
+                                                                                                prices_instr2=instr2_bid_ask,
+                                                                                                grid_order_type='limit')
+                        # if creation of batch limit orders was not successful, go to next level
+                        # asyncio.sleep is not needed because it is 'for' loop
+                        if handleBatchOrdersExecutionOutput.status == False:
+                            continue
+
                         self.grid_controller.update_limit_order(level=level,
-                                                                order1_id=order1_id,
-                                                                order2_id=order2_id)
+                                                                order1_id=handleBatchOrdersExecutionOutput.order1_id,
+                                                                order2_id=handleBatchOrdersExecutionOutput.order2_id)
                         await self.telegram_bot.send_message(
                             f'Created limit orders for level {level}. \n'
                             f'Current spread price: {spread_price}. \n'
@@ -235,12 +266,17 @@ class TradingBotTwoInstrumentsLimitOrders(BaseTradingBotTwoInstruments):
                     elif self.grid_direction == GridDirections.GRID_DIRECTION_LONG and (level_info.reached == True) and (level_info.take_profit_level <= spread_price) or \
                             self.grid_direction == GridDirections.GRID_DIRECTION_SHORT and (level_info.reached == True) and (level_info.take_profit_level >= spread_price):
                         # it's time to execute take profit limit order and clear grid level
-                        (order1_id, order2_id) = await self.create_batch_limit_orders(prices_instr1=instr1_bid_ask,
-                                                                                      prices_instr2=instr2_bid_ask,
-                                                                                      grid_order_type='take_profit')
+                        handleBatchOrdersExecutionOutput = await self.create_batch_limit_orders(prices_instr1=instr1_bid_ask,
+                                                                                                prices_instr2=instr2_bid_ask,
+                                                                                                grid_order_type='take_profit')
+                        # if creation of batch limit orders was not successful, go to next level
+                        # asyncio.sleep is not needed because it is 'for' loop
+                        if handleBatchOrdersExecutionOutput.status == False:
+                            continue
+
                         self.grid_controller.update_take_profit_order(level=level,
-                                                                      order1_id=order1_id,
-                                                                      order2_id=order2_id)
+                                                                      order1_id=handleBatchOrdersExecutionOutput.order1_id,
+                                                                      order2_id=handleBatchOrdersExecutionOutput.order2_id)
                         await self.telegram_bot.send_message(
                             f'Executed take profit orders for level {level}. \n'
                             f'Take profit level: {level_info.take_profit_level}. \n'
