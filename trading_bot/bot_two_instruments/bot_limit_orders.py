@@ -72,7 +72,7 @@ class TradingBotTwoInstrumentsLimitOrders(BaseTradingBotTwoInstruments):
         print(batchLimitOrderInputs.order1_id, batchLimitOrderInputs.order2_id)
         new_order1_id = batchLimitOrderInputs.order1_id
         new_order2_id = batchLimitOrderInputs.order2_id
-        while order1_done != True and order2_done != True:
+        while (order1_done != True) or (order2_done != True):
             order1 = await self.conn.get_order(order_id=batchLimitOrderInputs.order1_id)
             order2 = await self.conn.get_order(order_id=batchLimitOrderInputs.order2_id)
 
@@ -85,10 +85,10 @@ class TradingBotTwoInstrumentsLimitOrders(BaseTradingBotTwoInstruments):
             if order2_state == 'filled':
                 order2_done = True
 
-            if order1_done and order2_done:
+            if (order1_done == True) and (order2_done == True):
                 await self.telegram_bot.send_message(
                     f'''Both orders were filled as limit orders''')
-            elif order1_done == True and order2_done == False:
+            elif (order1_done == True) and (order2_done == False):
                 if self.calculate_spread_deviation(_spread_price=batchLimitOrderInputs.spread_price,
                                                    spread_price=spread_price) > self.two_instr_max_spread_price_deviation:
                     # we should cancel limit order and only then execute market order
@@ -106,7 +106,7 @@ class TradingBotTwoInstrumentsLimitOrders(BaseTradingBotTwoInstruments):
                 else:
                     # keep waiting for filling
                     pass
-            elif order1_done == False and order2_done == True:
+            elif (order1_done == False) and (order2_done == True):
                 if self.calculate_spread_deviation(_spread_price=batchLimitOrderInputs.spread_price,
                                                    spread_price=spread_price) > self.two_instr_max_spread_price_deviation:
                     # we should cancel limit order and only then execute market order
@@ -127,6 +127,8 @@ class TradingBotTwoInstrumentsLimitOrders(BaseTradingBotTwoInstruments):
             else:  # i.e order1_done == False and order2_done == False
                 if self.calculate_spread_deviation(_spread_price=batchLimitOrderInputs.spread_price,
                                                    spread_price=spread_price) > self.two_instr_max_spread_price_deviation:
+                    print('canceling two orders. Statuses:',
+                          order1_done, order2_done)
                     await self.conn.cancel_order(order_id=new_order1_id)
                     await self.conn.cancel_order(order_id=new_order2_id)
                     break
