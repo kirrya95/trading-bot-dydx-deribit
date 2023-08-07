@@ -37,8 +37,8 @@ class BatchLimitOrderInputs:
 @dataclass
 class HandleBatchOrdersExecutionOutput:
     status: bool
-    order1_id: str
-    order2_id: str
+    order1_id: tp.Union[str, None]
+    order2_id: tp.Union[str, None]
 
 
 class TradingBotTwoInstrumentsLimitOrders(BaseTradingBotTwoInstruments):
@@ -72,77 +72,86 @@ class TradingBotTwoInstrumentsLimitOrders(BaseTradingBotTwoInstruments):
         print(batchLimitOrderInputs.order1_id, batchLimitOrderInputs.order2_id)
         new_order1_id = batchLimitOrderInputs.order1_id
         new_order2_id = batchLimitOrderInputs.order2_id
-        while (order1_done != True) or (order2_done != True):
-            order1 = await self.conn.get_order(order_id=batchLimitOrderInputs.order1_id)
-            order2 = await self.conn.get_order(order_id=batchLimitOrderInputs.order2_id)
+        try:
+            while (order1_done != True) or (order2_done != True):
+                order1 = await self.conn.get_order(order_id=batchLimitOrderInputs.order1_id)
+                order2 = await self.conn.get_order(order_id=batchLimitOrderInputs.order2_id)
 
-            order1_state = order1['order_state']
-            order2_state = order2['order_state']
-            (_, _, spread_price) = await self.get_instr_prices_and_spread()
+                order1_state = order1['order_state']
+                order2_state = order2['order_state']
+                (_, _, spread_price) = await self.get_instr_prices_and_spread()
 
-            if order1_state == 'filled':
-                order1_done = True
-            if order2_state == 'filled':
-                order2_done = True
-
-            if (order1_done == True) and (order2_done == True):
-                await self.telegram_bot.send_message(
-                    f'''Both orders were filled as limit orders''')
-            elif (order1_done == True) and (order2_done == False):
-                if self.calculate_spread_deviation(_spread_price=batchLimitOrderInputs.spread_price,
-                                                   spread_price=spread_price) > self.grid_step*self.two_instr_max_spread_price_deviation:
-                    # we should cancel limit order and only then execute market order
-                    await self.conn.cancel_order(order_id=new_order2_id)
-                    order2 = await self.conn.execute_market_order(
-                        instrument_name=self.instr2_name,
-                        amount=batchLimitOrderInputs.instr2_amount,
-                        side=batchLimitOrderInputs.instr2_side
-                    )
-                    await self.telegram_bot.send_message(
-                        f'Order {new_order2_id} was cancelled and market order was executed instead'
-                        f'Order1 was filled as limit order')
-                    new_order2_id = order2['order_id']
-                    order2_done = True
-                else:
-                    # keep waiting for filling
-                    pass
-            elif (order1_done == False) and (order2_done == True):
-                if self.calculate_spread_deviation(_spread_price=batchLimitOrderInputs.spread_price,
-                                                   spread_price=spread_price) > self.grid_step*self.two_instr_max_spread_price_deviation:
-                    # we should cancel limit order and only then execute market order
-                    await self.conn.cancel_order(order_id=new_order1_id)
-                    order1 = await self.conn.execute_market_order(
-                        instrument_name=self.instr1_name,
-                        amount=batchLimitOrderInputs.instr1_amount,
-                        side=batchLimitOrderInputs.instr1_side
-                    )
-                    await self.telegram_bot.send_message(
-                        f'Order {new_order1_id} was cancelled and market order was executed instead'
-                        f'Order2 was filled as limit order')
-                    new_order1_id = order1['order_id']
+                if order1_state == 'filled':
                     order1_done = True
-                else:
-                    # keep waiting for filling
-                    pass
-            else:  # i.e order1_done == False and order2_done == False
-                if self.calculate_spread_deviation(_spread_price=batchLimitOrderInputs.spread_price,
-                                                   spread_price=spread_price) > self.grid_step*self.two_instr_max_spread_price_deviation:
-                    print('canceling two orders. Statuses:',
-                          order1_done, order2_done)
-                    await self.conn.cancel_order(order_id=new_order1_id)
-                    await self.conn.cancel_order(order_id=new_order2_id)
-                    break
-                else:
-                    # keep waiting for filling
-                    pass
-            await asyncio.sleep(1)
+                if order2_state == 'filled':
+                    order2_done = True
+
+                if (order1_done == True) and (order2_done == True):
+                    await self.telegram_bot.send_message(
+                        f'''Both orders were filled as limit orders''')
+                elif (order1_done == True) and (order2_done == False):
+                    if self.calculate_spread_deviation(_spread_price=batchLimitOrderInputs.spread_price,
+                                                       spread_price=spread_price) > self.grid_step*self.two_instr_max_spread_price_deviation:
+                        print('canceling one order and execute as market')
+                        print(order1_done, order2_done)
+                        # we should cancel limit order and only then execute market order
+                        await self.conn.cancel_order(order_id=new_order2_id)
+                        order2 = await self.conn.execute_market_order(
+                            instrument_name=self.instr2_name,
+                            amount=batchLimitOrderInputs.instr2_amount,
+                            side=batchLimitOrderInputs.instr2_side
+                        )
+                        await self.telegram_bot.send_message(
+                            f'Order {new_order2_id} was cancelled and market order was executed instead'
+                            f'Order1 was filled as limit order')
+                        new_order2_id = order2['order_id']
+                        order2_done = True
+                    else:
+                        # keep waiting for filling
+                        pass
+                elif (order1_done == False) and (order2_done == True):
+                    if self.calculate_spread_deviation(_spread_price=batchLimitOrderInputs.spread_price,
+                                                       spread_price=spread_price) > self.grid_step*self.two_instr_max_spread_price_deviation:
+                        print('canceling one order and execute as market')
+                        print(order1_done, order2_done)
+                        # we should cancel limit order and only then execute market order
+                        await self.conn.cancel_order(order_id=new_order1_id)
+                        order1 = await self.conn.execute_market_order(
+                            instrument_name=self.instr1_name,
+                            amount=batchLimitOrderInputs.instr1_amount,
+                            side=batchLimitOrderInputs.instr1_side
+                        )
+                        await self.telegram_bot.send_message(
+                            f'Order {new_order1_id} was cancelled and market order was executed instead'
+                            f'Order2 was filled as limit order')
+                        new_order1_id = order1['order_id']
+                        order1_done = True
+                    else:
+                        # keep waiting for filling
+                        pass
+                else:  # i.e order1_done == False and order2_done == False
+                    if self.calculate_spread_deviation(_spread_price=batchLimitOrderInputs.spread_price,
+                                                       spread_price=spread_price) > self.grid_step*self.two_instr_max_spread_price_deviation:
+                        print('canceling two orders. Statuses:',
+                              order1_done, order2_done)
+                        await self.conn.cancel_order(order_id=new_order1_id)
+                        await self.conn.cancel_order(order_id=new_order2_id)
+                        break
+                    else:
+                        # keep waiting for filling
+                        pass
+                await asyncio.sleep(1)
+        except Exception as err:
+            await self.telegram_bot.send_message(f"{err}")
         print('finished while cycle', order1_done, order2_done)
         print(HandleBatchOrdersExecutionOutput(status=True,
               order1_id=new_order1_id, order2_id=new_order2_id))
         if (order1_done and order2_done):
             return HandleBatchOrdersExecutionOutput(status=True, order1_id=new_order1_id, order2_id=new_order2_id)
         elif (order1_done == False and order2_done == False):
-            return HandleBatchOrdersExecutionOutput(status=False, order1_id=new_order1_id, order2_id=new_order2_id)
+            return HandleBatchOrdersExecutionOutput(status=False, order1_id=None, order2_id=None)
+        else:
+            return HandleBatchOrdersExecutionOutput(status=False, order1_id=None, order2_id=None)
 
     async def create_batch_limit_orders(self,
                                         prices_instr1: InstrPrices,
