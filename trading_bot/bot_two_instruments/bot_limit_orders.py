@@ -90,7 +90,7 @@ class TradingBotTwoInstrumentsLimitOrders(BaseTradingBotTwoInstruments):
                     f'''Both orders were filled as limit orders''')
             elif (order1_done == True) and (order2_done == False):
                 if self.calculate_spread_deviation(_spread_price=batchLimitOrderInputs.spread_price,
-                                                   spread_price=spread_price) > self.two_instr_max_spread_price_deviation:
+                                                   spread_price=spread_price) > self.grid_step*self.two_instr_max_spread_price_deviation:
                     # we should cancel limit order and only then execute market order
                     await self.conn.cancel_order(order_id=new_order2_id)
                     order2 = await self.conn.execute_market_order(
@@ -108,7 +108,7 @@ class TradingBotTwoInstrumentsLimitOrders(BaseTradingBotTwoInstruments):
                     pass
             elif (order1_done == False) and (order2_done == True):
                 if self.calculate_spread_deviation(_spread_price=batchLimitOrderInputs.spread_price,
-                                                   spread_price=spread_price) > self.two_instr_max_spread_price_deviation:
+                                                   spread_price=spread_price) > self.grid_step*self.two_instr_max_spread_price_deviation:
                     # we should cancel limit order and only then execute market order
                     await self.conn.cancel_order(order_id=new_order1_id)
                     order1 = await self.conn.execute_market_order(
@@ -126,7 +126,7 @@ class TradingBotTwoInstrumentsLimitOrders(BaseTradingBotTwoInstruments):
                     pass
             else:  # i.e order1_done == False and order2_done == False
                 if self.calculate_spread_deviation(_spread_price=batchLimitOrderInputs.spread_price,
-                                                   spread_price=spread_price) > self.two_instr_max_spread_price_deviation:
+                                                   spread_price=spread_price) > self.grid_step*self.two_instr_max_spread_price_deviation:
                     print('canceling two orders. Statuses:',
                           order1_done, order2_done)
                     await self.conn.cancel_order(order_id=new_order1_id)
