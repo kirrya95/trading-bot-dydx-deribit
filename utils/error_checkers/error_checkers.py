@@ -8,7 +8,7 @@ def check_grid_direction(func):
     sig = inspect.signature(func)
 
     @wraps(func)
-    async def wrapper(*args, **kwargs):
+    def wrapper(*args, **kwargs):
         bound = sig.bind(*args, **kwargs)
         bound.apply_defaults()
         grid_direction = bound.arguments.get('grid_direction')
@@ -17,7 +17,7 @@ def check_grid_direction(func):
         if grid_direction not in [GridDirections.GRID_DIRECTION_LONG, GridDirections.GRID_DIRECTION_SHORT]:
             raise ValueError(
                 f'Incorrect direction. Should be either {GridDirections.GRID_DIRECTION_LONG} or {GridDirections.GRID_DIRECTION_SHORT}')
-        return await func(*args, **kwargs)
+        return func(*args, **kwargs)
     return wrapper
 
 
