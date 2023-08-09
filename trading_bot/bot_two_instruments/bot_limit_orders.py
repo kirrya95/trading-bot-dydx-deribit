@@ -156,66 +156,72 @@ class TradingBotTwoInstrumentsLimitOrders(BaseTradingBotTwoInstruments):
                                         prices_instr1: InstrPrices,
                                         prices_instr2: InstrPrices,
                                         grid_order_type: tp.Literal['limit', 'take_profit']) -> HandleBatchOrdersExecutionOutput:
-        instr1_amount = trade_utils.get_size_to_trade(instr_name=self.instr1_name,
-                                                      instr_prices=prices_instr1,
-                                                      direction=self.grid_direction,
-                                                      kind=self.kind1,
-                                                      config_size=self.order_size)
-        instr2_amount = trade_utils.get_size_to_trade(instr_name=self.instr2_name,
-                                                      instr_prices=prices_instr2,
-                                                      direction=self.anti_grid_direction,
-                                                      kind=self.kind2,
-                                                      config_size=self.order_size)
-        spread_price = utils.calculate_spread_from_two_instr_prices(instr1_bid_ask=prices_instr1,
-                                                                    instr2_bid_ask=prices_instr2,
-                                                                    spread_operator=self.spread_operator,
-                                                                    grid_direction=self.grid_direction)
-        print('create_batch_limit_orders')
-        print('instr 1 amount', instr1_amount)
-        print('instr 2 amount', instr2_amount)
+        try:
+            instr1_amount = trade_utils.get_size_to_trade(instr_name=self.instr1_name,
+                                                          instr_prices=prices_instr1,
+                                                          direction=self.grid_direction,
+                                                          kind=self.kind1,
+                                                          config_size=self.order_size)
+            instr2_amount = trade_utils.get_size_to_trade(instr_name=self.instr2_name,
+                                                          instr_prices=prices_instr2,
+                                                          direction=self.anti_grid_direction,
+                                                          kind=self.kind2,
+                                                          config_size=self.order_size)
+            spread_price = utils.calculate_spread_from_two_instr_prices(instr1_bid_ask=prices_instr1,
+                                                                        instr2_bid_ask=prices_instr2,
+                                                                        spread_operator=self.spread_operator,
+                                                                        grid_direction=self.grid_direction)
+            print('create_batch_limit_orders')
+            print('instr 1 amount', instr1_amount)
+            print('instr 2 amount', instr2_amount)
 
-        # mean price because we want to increase probability that the orders will be executed
-        price1 = (prices_instr1.best_bid + prices_instr1.best_ask) / 2
-        price2 = (prices_instr2.best_bid + prices_instr2.best_ask) / 2
-        price1 = utils.round_price(price=price1, instr_name=self.instr1_name)
-        price2 = utils.round_price(price=price2, instr_name=self.instr2_name)
-        print('prices')
-        print('price1', price1)
-        print('price2', price2)
+            # mean price because we want to increase probability that the orders will be executed
+            price1 = (prices_instr1.best_bid + prices_instr1.best_ask) / 2
+            price2 = (prices_instr2.best_bid + prices_instr2.best_ask) / 2
+            price1 = utils.round_price(
+                price=price1, instr_name=self.instr1_name)
+            price2 = utils.round_price(
+                price=price2, instr_name=self.instr2_name)
+            print('prices')
+            print('price1', price1)
+            print('price2', price2)
 
-        side1 = OrderSides.ORDER_SIDE_BUY if self.grid_direction == GridDirections.GRID_DIRECTION_LONG else OrderSides.ORDER_SIDE_SELL
-        side2 = OrderSides.ORDER_SIDE_BUY if self.anti_grid_direction == GridDirections.GRID_DIRECTION_LONG else OrderSides.ORDER_SIDE_SELL
+            side1 = OrderSides.ORDER_SIDE_BUY if self.grid_direction == GridDirections.GRID_DIRECTION_LONG else OrderSides.ORDER_SIDE_SELL
+            side2 = OrderSides.ORDER_SIDE_BUY if self.anti_grid_direction == GridDirections.GRID_DIRECTION_LONG else OrderSides.ORDER_SIDE_SELL
 
-        if grid_order_type == 'take_profit':
-            side1, side2 = side2, side1
+            if grid_order_type == 'take_profit':
+                side1, side2 = side2, side1
 
-        order1 = await self.conn.create_limit_order(instrument_name=self.instr1_name,
-                                                    amount=instr1_amount,
-                                                    price=price1,
-                                                    action=side1)
-        order2 = await self.conn.create_limit_order(instrument_name=self.instr2_name,
-                                                    amount=instr2_amount,
-                                                    price=price2,
-                                                    action=side2)
-        order1_id = order1['order_id']
-        order2_id = order2['order_id']
-        # these are possibly other orders, not the ones we just created
-        handleBatchOrdersExecutionOutput = await self.handle_batch_orders_executions(
-            batchLimitOrderInputs=BatchLimitOrderInputs(
-                order1_id=order1_id,
-                order2_id=order2_id,
-                instr1_amount=instr1_amount,
-                instr2_amount=instr2_amount,
-                instr1_prices=prices_instr1,
-                instr2_prices=prices_instr2,
-                spread_price=spread_price,
-                instr1_side=side1,
-                instr2_side=side2
-            ))
-        print('status', handleBatchOrdersExecutionOutput.status)
-        print('order1_id', handleBatchOrdersExecutionOutput.order1_id)
-        print('order2_id', handleBatchOrdersExecutionOutput.order2_id)
-        return handleBatchOrdersExecutionOutput
+            order1 = await self.conn.create_limit_order(instrument_name=self.instr1_name,
+                                                        amount=instr1_amount,
+                                                        price=price1,
+                                                        action=side1)
+            order2 = await self.conn.create_limit_order(instrument_name=self.instr2_name,
+                                                        amount=instr2_amount,
+                                                        price=price2,
+                                                        action=side2)
+            order1_id = order1['order_id']
+            order2_id = order2['order_id']
+            # these are possibly other orders, not the ones we just created
+            handleBatchOrdersExecutionOutput = await self.handle_batch_orders_executions(
+                batchLimitOrderInputs=BatchLimitOrderInputs(
+                    order1_id=order1_id,
+                    order2_id=order2_id,
+                    instr1_amount=instr1_amount,
+                    instr2_amount=instr2_amount,
+                    instr1_prices=prices_instr1,
+                    instr2_prices=prices_instr2,
+                    spread_price=spread_price,
+                    instr1_side=side1,
+                    instr2_side=side2
+                ))
+            print('status', handleBatchOrdersExecutionOutput.status)
+            print('order1_id', handleBatchOrdersExecutionOutput.order1_id)
+            print('order2_id', handleBatchOrdersExecutionOutput.order2_id)
+            return handleBatchOrdersExecutionOutput
+        except Exception as err:
+            await self.telegram_bot.simple_send_message(f"{err}")
+            return HandleBatchOrdersExecutionOutput(status=False)
 
     async def get_instr_prices_and_spread(self) -> tp.Tuple[InstrPrices, InstrPrices, float]:
         prices_instr1 = InstrPrices(**(await self.conn.get_asset_price(instrument_name=self.instr1_name)))
