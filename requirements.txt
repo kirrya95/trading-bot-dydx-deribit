@@ -4,3 +4,4 @@ python-telegram-bot
 pyyaml
 dydx-v3-python
 web3
+pytest
