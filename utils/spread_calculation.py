@@ -9,16 +9,10 @@ class InstrPrices:
     best_ask: float
 
 
-def check_operator(operator: str):
-    if operator not in ['/', '*', '+', '-']:
-        raise ValueError(f"Invalid spread operator: {operator}")
-
-
 def calculate_spread_from_two_instr_prices(instr1_bid_ask: InstrPrices,
                                            instr2_bid_ask: InstrPrices,
                                            spread_operator: str,
                                            grid_direction: GridDirections) -> float:
-    check_operator(spread_operator)
 
     if grid_direction == GridDirections.GRID_DIRECTION_LONG:
         instr1_price = instr1_bid_ask.best_ask

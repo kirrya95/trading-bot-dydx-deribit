@@ -12,8 +12,8 @@ from telegram_bot import TelegramNotifier
 
 # from trading_bot.trading_bot import TradingBot
 
-from trading_bot import TradingBotOneInstrumentMarketOrders, TradingBotTwoInstrumentsMarketOrders
-from trading_bot import TradingBotOneInstrumentLimitOrders, TradingBotTwoInstrumentsLimitOrders
+from trading_bot import (TradingBotOneInstrumentMarketOrders, TradingBotTwoInstrumentsMarketOrders,
+                         TradingBotOneInstrumentLimitOrders, TradingBotTwoInstrumentsLimitOrders)
 
 from utils import load_config
 
